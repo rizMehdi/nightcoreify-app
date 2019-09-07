@@ -1,0 +1,25 @@
+{
+  "name": "nightcoreify",
+  "version": "1.0.0",
+  "description": "script that automatically creates nightcore and uploads it",
+  "main": "index.js",
+  "dependencies": {
+    "dotenv": "^8.1.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "googleapis": "^42.0.0",
+    "got": "^9.6.0",
+    "pixiv-api-client": "^0.20.0",
+    "tmp": "^0.1.0",
+    "unescape": "^1.0.1",
+    "ytdl-core": "^0.29.5"
+  },
+  "engines": {
+    "node": "8.10.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

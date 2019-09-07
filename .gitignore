@@ -1,0 +1,5 @@
+ffmpeg
+node_modules/*
+zip.txt
+.env
+old/*

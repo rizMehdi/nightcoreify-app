@@ -14,19 +14,22 @@ async function main() {
     var videos, videoi = 0; // video search results, index in videos array
 
     var flv = tmp.fileSync({ postfix: '.flv' }), mp4 = tmp.fileSync({ postfix: '.mp4' }),
-        jpg = tmp.fileSync({ postfix: '.jpg' });
+        mp3 = tmp.fileSync({ postfix: '.mp3' }), jpg = tmp.fileSync({ postfix: '.jpg' });
 
     try {
+        ffmpeg.setFfmpegPath(process.cwd() + '/ffmpeg');
         ytAuth();
         await getImage();
         await dlImage();
         await getVideo();
         await dlVideo();
+        await encodeAudio();
         await encodeVideo();
         await uploadVideo();
         flv.removeCallback();
         mp4.removeCallback();
         jpg.removeCallback();
+        mp3.removeCallback();
     } catch (err) {
         console.log(err);
         console.log('Self isekai time');
@@ -77,7 +80,8 @@ async function main() {
             }
             const gotStream = got.stream(img, { encoding: null, headers: { Referer: 'http://www.pixiv.net/' } });
             gotStream.on('error', async function (e) {
-                console.log('Error downloading image\n' + e);
+                console.log('Error downloading image');
+                console.log(e);
                 await dlImage();
             });
 
@@ -117,7 +121,7 @@ async function main() {
                     return;
                 }
                 if (meOnly !== true) { // If we're not searching for our own videos we need to make sure nothing's too long
-                    console.log('\n\nLooking for videos that are too long');
+                    console.log('Looking for videos that are too long');
                     var ids = [];
                     for (var i = 0; i < results.data.items.length; i++) {
                         ids.push(results.data.items[i].id.videoId);
@@ -168,7 +172,7 @@ async function main() {
             } else {
                 video = results[0].id.videoId;
                 videos = results;
-                console.log('\n\nFound video id ' + video);
+                console.log('Found video id ' + video);
                 findUniqueId();
                 async function findUniqueId() { // See if we've uploaded a video with this id in the desc
                     let r = await searchVideo(video, 1, true);
@@ -213,32 +217,50 @@ async function main() {
         });
     }
 
-    function encodeVideo() {
+    function encodeAudio() {
         return new Promise((resolve, reject) => {
-            console.log('Calling ffmpeg');
-            ffmpeg.setFfmpegPath(process.cwd() + '/ffmpeg'); // comment out if you don't want to use your own binary
+            console.log('Encoding to mp3');
             ffmpeg(flv.name)
-                .addInput(jpg.name)
-                .loop()
-                .videoCodec('libx264')
-                .videoFilter('pad=ceil(iw/2)*2:ceil(ih/2)*2')
-                .addOptions([
-                    '-map', '0:1',
-                    '-map', '1:0',
-                    '-y',
-                    '-tune', 'stillimage',
-                    '-shortest'
-                ])
-                .audioFilters('asetrate=55786.5') // assuming sample rate is 44100 Hz, this is 126.5%
-                .on('end', function () {
-                    console.log('Finished encoding');
-                    console.log('mp4 size: ' + fs.statSync(mp4.name).size);
+                .audioFilters('asetrate=55786.5') // 126.5% sample rate = 44100
+                .output(mp3.name)
+                .on('end', function (stdout) {
+                    console.log('Converted to mp3');
+                    console.log('mp3 size: ' + fs.statSync(mp3.name).size);
+                    console.log(stdout);
                     resolve();
                 })
                 .on('error', function (err) {
                     reject(err);
                 })
+                .run();
+        });
+    }
+
+    function encodeVideo() {
+        return new Promise((resolve, reject) => {
+            console.log('Encoding to mp4');
+            ffmpeg(jpg.name)
+                .loop()
+                .addInput(mp3.name)
+                .videoCodec('libx264')
+                .videoFilter('pad=ceil(iw/2)*2:ceil(ih/2)*2')
+                .audioCodec('aac')
+                .addOptions([
+                    '-tune', 'stillimage',
+                    '-pix_fmt', 'yuv420p',
+                    '-preset', 'veryfast',
+                    '-shortest',
+                ])
                 .output(mp4.name)
+                .on('end', function (stdout) {
+                    console.log('Converted to mp4');
+                    console.log('mp4 size: ' + fs.statSync(mp4.name).size);
+                    console.log(stdout);
+                    resolve();
+                })
+                .on('error', function (err) {
+                    reject(err);
+                })
                 .run();
         });
     }

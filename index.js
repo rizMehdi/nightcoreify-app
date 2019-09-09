@@ -6,11 +6,11 @@ if (!!(process.env.LAMBDA_TASK_ROOT || false)) { // if we're running in AWS Lamb
 
 async function main() {
     require('dotenv').config();
-    var fs = require('fs'), decode = require('unescape'), ffmpeg = require('fluent-ffmpeg'), tmp = require('tmp'),
+    var fs = require('fs'), decode = require('unescape'), ffmpeg = require('fluent-ffmpeg'), tmp = require('tmp'), mm = require('music-metadata'),
         ytdl = require('ytdl-core'), pixiv = require('pixiv-api-client'), got = require('got'), { google } = require('googleapis');
 
     var pixivlink = '', timesDlImageCalled = 0, timesGetVideoCalled = 0, video, videotitle = '', service,
-        auth, timesDlCalled = 0, img;
+        auth, timesDlCalled = 0, img, sampleRate;
     var videos, videoi = 0; // video search results, index in videos array
 
     var flv = tmp.fileSync({ postfix: '.flv' }), mp4 = tmp.fileSync({ postfix: '.mp4' }),
@@ -221,13 +221,18 @@ async function main() {
         return new Promise((resolve, reject) => {
             console.log('Encoding to mp3');
             ffmpeg(flv.name)
-                .audioFilters('asetrate=55786.5') // 126.5% sample rate = 44100
                 .output(mp3.name)
                 .on('end', function (stdout) {
                     console.log('Converted to mp3');
                     console.log('mp3 size: ' + fs.statSync(mp3.name).size);
                     console.log(stdout);
-                    resolve();
+                    mm.parseFile(mp3.name, { native: true }).then(metadata => {
+                        sampleRate = metadata.format.sampleRate;
+                        console.log('mp3 sample rate: ' + sampleRate);
+                        resolve();
+                    }).catch(err => {
+                        reject(err);
+                    });
                 })
                 .on('error', function (err) {
                     reject(err);
@@ -245,6 +250,7 @@ async function main() {
                 .videoCodec('libx264')
                 .videoFilter('pad=ceil(iw/2)*2:ceil(ih/2)*2')
                 .audioCodec('aac')
+                .audioFilters('asetrate=' + (sampleRate * 1.265))
                 .addOptions([
                     '-tune', 'stillimage',
                     '-pix_fmt', 'yuv420p',

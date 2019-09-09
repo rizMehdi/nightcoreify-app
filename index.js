@@ -204,7 +204,7 @@ async function main() {
                 return;
             }
             timesDlCalled++;
-            ytdl('http://www.youtube.com/watch?v=' + video).pipe(fs.createWriteStream(flv.name))
+            ytdl('http://www.youtube.com/watch?v=' + video, { quality: 'highestaudio' }).pipe(fs.createWriteStream(flv.name))
                 .on('finish', function () {
                     console.log('Downloaded');
                     console.log('flv size: ' + fs.statSync(flv.name).size);
@@ -248,7 +248,7 @@ async function main() {
                 .addOptions([
                     '-tune', 'stillimage',
                     '-pix_fmt', 'yuv420p',
-                    '-preset', 'veryfast',
+                    '-preset', 'ultrafast',
                     '-shortest',
                 ])
                 .output(mp4.name)

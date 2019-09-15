@@ -1,4 +1,4 @@
-if (!!(process.env.LAMBDA_TASK_ROOT || false)) { // if we're running in AWS Lambda, set the handler function
+if (!!(process.env.LAMBDA_TASK_ROOT || false)) { // if we're running in AWS Lambda, set the handler
     exports.handler = main;
 } else {
     main();
@@ -11,7 +11,7 @@ async function main() {
 
     var pixivlink = '', timesDlImageCalled = 0, timesGetVideoCalled = 0, video, videotitle = '', service,
         auth, timesDlCalled = 0, img, sampleRate;
-    var videos, videoi = 0; // video search results, index in videos array
+    var videos, videoi; // video search results, index in videos array
 
     var flv = tmp.fileSync({ postfix: '.flv' }), mp4 = tmp.fileSync({ postfix: '.mp4' }),
         mp3 = tmp.fileSync({ postfix: '.mp3' }), jpg = tmp.fileSync({ postfix: '.jpg' });
@@ -79,7 +79,7 @@ async function main() {
                 return;
             }
             const gotStream = got.stream(img, { encoding: null, headers: { Referer: 'http://www.pixiv.net/' } });
-            gotStream.on('error', async function (e) {
+            gotStream.on('error', async (e) => {
                 console.log('Error downloading image');
                 console.log(e);
                 await dlImage();
@@ -115,7 +115,7 @@ async function main() {
                     videoCategoryId: 10
                 };
             }
-            service.search.list(options, function (err, results) {
+            service.search.list(options, (err, results) => {
                 if (err) { // error searching for video
                     reject('The YouTube API returned an error: ' + err);
                     return;
@@ -130,7 +130,7 @@ async function main() {
                         auth: auth,
                         part: 'contentDetails',
                         id: ids.join(',')
-                    }, function (err, results2) {
+                    }, (err, results2) => {
                         if (err) {
                             reject('The YouTube API returned an error: ' + err);
                             return;
@@ -170,25 +170,20 @@ async function main() {
                 console.log('No videos found.');
                 await getVideo(); // try again
             } else {
-                video = results[0].id.videoId;
+                videoi = random(results.length - 1);
+                video = results[videoi].id.videoId;
                 videos = results;
-                console.log('Found video id ' + video);
                 findUniqueId();
                 async function findUniqueId() { // See if we've uploaded a video with this id in the desc
                     let r = await searchVideo(video, 1, true);
                     if (r.length == 0) {
-                        console.log('This is a unique video, I\'ll use this one.');
+                        console.log(video + ' is a unique video');
                         videotitle = decode(videos[videoi].snippet.title);
                         console.log(JSON.stringify(videos[videoi]));
                         resolve();
                     } else {
-                        console.log('I\'ve used this one before, trying again.');
-                        ++videoi;
-                        if (videoi > results.length) {
-                            reject("This shouldn't even happen");
-                            process.exit(1);
-                            return;
-                        }
+                        console.log('Uploaded ' + video + ' before, looking for a new video');
+                        videoi = random(results.length - 1);
                         video = videos[videoi].id.videoId;
                         findUniqueId();
                     }
@@ -205,12 +200,12 @@ async function main() {
             }
             timesDlCalled++;
             ytdl('http://www.youtube.com/watch?v=' + video, { quality: 'highestaudio' }).pipe(fs.createWriteStream(flv.name))
-                .on('finish', function () {
+                .on('finish', () => {
                     console.log('Downloaded');
                     console.log('flv size: ' + fs.statSync(flv.name).size);
                     resolve();
                 })
-                .on('error', async function (err) {
+                .on('error', async (err) => {
                     console.log(err);
                     await dlVideo();
                 });
@@ -222,7 +217,7 @@ async function main() {
             console.log('Encoding to mp3');
             ffmpeg(flv.name)
                 .output(mp3.name)
-                .on('end', function (stdout) {
+                .on('end', (stdout) => {
                     console.log('Converted to mp3');
                     console.log('mp3 size: ' + fs.statSync(mp3.name).size);
                     console.log(stdout);
@@ -234,7 +229,7 @@ async function main() {
                         reject(err);
                     });
                 })
-                .on('error', function (err) {
+                .on('error', (err) => {
                     reject(err);
                 })
                 .run();
@@ -258,13 +253,13 @@ async function main() {
                     '-shortest',
                 ])
                 .output(mp4.name)
-                .on('end', function (stdout) {
+                .on('end', (stdout) => {
                     console.log('Converted to mp4');
                     console.log('mp4 size: ' + fs.statSync(mp4.name).size);
                     console.log(stdout);
                     resolve();
                 })
-                .on('error', function (err) {
+                .on('error', (err) => {
                     reject(err);
                 })
                 .run();
@@ -294,7 +289,7 @@ async function main() {
             console.log(JSON.stringify(options));
             service.videos.insert(
                 options, {},
-                function (err, res) {
+                (err, res) => {
                     if (err) {
                         reject(err);
                         return;
@@ -322,6 +317,10 @@ function truncateTitle(s) {
         return s.substring(0, 97) + '...';
     }
     return s;
+}
+
+function random(max) {
+    return Math.floor(Math.random() * (max + 1));
 }
 
 function randomid() {

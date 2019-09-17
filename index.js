@@ -115,11 +115,13 @@ async function main() {
                     videoCategoryId: 10
                 };
             }
+            console.log('Searching for query ' + q);
             service.search.list(options, (err, results) => {
                 if (err) { // error searching for video
                     reject('The YouTube API returned an error: ' + err);
                     return;
                 }
+                console.log('Returned ' + results.data.items.length + ' videos');
                 if (meOnly !== true) { // If we're not searching for our own videos we need to make sure nothing's too long
                     console.log('Looking for videos that are too long');
                     var ids = [];

@@ -115,7 +115,7 @@ async function main() {
                     videoCategoryId: 10
                 };
             }
-            console.log('Searching for query ' + q);
+            console.log('Searching for query "' + q + '"' + (meOnly ? ' on my channel' : ''));
             service.search.list(options, (err, results) => {
                 if (err) { // error searching for video
                     reject('The YouTube API returned an error: ' + err);
@@ -153,6 +153,7 @@ async function main() {
                                 }
                             }
                         }
+                        console.log('New length is ' + results.data.items.length);
                         resolve(results.data.items);
                     });
                 } else resolve(results.data.items);

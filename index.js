@@ -139,8 +139,9 @@ async function main() {
                         }
                         var i = results2.data.items.length, removeids = [];
                         while (i--) {
-                            if (parseDuration(results2.data.items[i].contentDetails.duration) > 360) { // longer than 6 minutes
-                                console.log(results2.data.items[i].id + ' is way too long');
+                            var d = parseDuration(results2.data.items[i].contentDetails.duration);
+                            if (d > 390) { // longer than 6 minutes 30 seconds
+                                console.log(results2.data.items[i].id + ' is way too long (' + d + 's)');
                                 removeids.push(results2.data.items[i].id);
                                 results2.data.items.splice(i, 1);
                             }
@@ -153,7 +154,7 @@ async function main() {
                                 }
                             }
                         }
-                        console.log('New length is ' + results.data.items.length);
+                        console.log('New array length is ' + results.data.items.length);
                         resolve(results.data.items);
                     });
                 } else resolve(results.data.items);

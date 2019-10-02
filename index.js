@@ -332,7 +332,7 @@ function parseDuration(d) {
 
 function truncate(s, l) {
     if (s.length >= l) {
-        return s.substring(0, l - 3) + '...';
+        return s.substring(0, l);
     }
     return s;
 }

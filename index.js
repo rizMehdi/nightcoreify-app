@@ -193,8 +193,8 @@ async function main() {
                                 reject('The YouTube API returned an error: ' + err);
                                 return;
                             }
-                            console.log('Found tags');
                             ogtags = results3.data.items[0].snippet.tags;
+                            console.log('Found tags: ' + ogtags.join(', '));
                             resolve();
                         });
                     } else {
@@ -338,6 +338,11 @@ function truncate(s, l) {
 }
 
 function createTags(t, title) {
+    for (var i = 0; i < t.length; i++) {
+        if (typeof t[i] == "undefined") {
+            t.splice(i, 1);
+        }
+    }
     var tags = ['nightcore', truncate(title, 30), truncate('nightcore - ' + title, 30)];
     tags = tags.concat(t);
     var length = 0;

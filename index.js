@@ -194,6 +194,9 @@ async function main() {
                                 return;
                             }
                             ogtags = results3.data.items[0].snippet.tags;
+                            for (var i = 0; i < ogtags.length; i++) {
+                                ogtags[i] = decode(ogtags[i]);
+                            }
                             console.log('Found tags: ' + ogtags.join(', '));
                             resolve();
                         });

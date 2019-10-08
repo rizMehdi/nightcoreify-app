@@ -194,10 +194,15 @@ async function main() {
                                 return;
                             }
                             ogtags = results3.data.items[0].snippet.tags;
-                            for (var i = 0; i < ogtags.length; i++) {
-                                ogtags[i] = decode(ogtags[i]);
+                            if (typeof ogtags == 'undefined') {
+                                ogtags = [];
+                                console.log('No tags found'); // in case someone has the AUDACITY to not tag their video
+                            } else {
+                                for (var i = 0; i < ogtags.length; i++) {
+                                    ogtags[i] = decode(ogtags[i]);
+                                }
+                                console.log('Found tags: ' + ogtags.join(', '));
                             }
-                            console.log('Found tags: ' + ogtags.join(', '));
                             resolve();
                         });
                     } else {
@@ -341,25 +346,29 @@ function truncate(s, l) {
 }
 
 function createTags(t, title) {
-    for (var i = 0; i < t.length; i++) {
-        if (typeof t[i] == "undefined") {
-            t.splice(i, 1);
-        }
-    }
     var tags = ['nightcore', truncate(title, 30), truncate('nightcore - ' + title, 30)];
-    tags = tags.concat(t);
-    var length = 0;
-    for (var i = 0; i < tags.length; i++) {
-        tags[i] = tags[i].toLowerCase();
-        length += tags[i].length;
-        if (length >= 400) {
-            tags = tags.slice(0, i - 1);
-            break;
+    if (t.length > 0) {
+        for (var i = 0; i < t.length; i++) {
+            if (typeof t[i] == "undefined") {
+                t.splice(i, 1);
+            }
         }
+        tags = tags.concat(t);
+        var length = 0;
+        for (var i = 0; i < tags.length; i++) {
+            tags[i] = tags[i].toLowerCase();
+            length += tags[i].length;
+            if (length >= 400) {
+                tags = tags.slice(0, i - 1);
+                break;
+            }
+        }
+        return tags.filter((item, index) => {
+            return tags.indexOf(item) >= index;
+        });
+    } else {
+        return tags;
     }
-    return tags.filter((item, index) => {
-        return tags.indexOf(item) >= index;
-    });
 }
 
 function random(max) {

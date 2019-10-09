@@ -241,10 +241,10 @@ async function main() {
             console.log('Encoding to mp3');
             ffmpeg(flv.name)
                 .output(mp3.name)
-                .on('end', (stdout) => {
+                .on('end', (stdout, stderr) => {
                     console.log('Converted to mp3');
                     console.log('mp3 size: ' + fs.statSync(mp3.name).size);
-                    console.log(stdout);
+                    console.log(stdout + stderr);
                     mm.parseFile(mp3.name, { native: true }).then(metadata => {
                         sampleRate = metadata.format.sampleRate;
                         console.log('mp3 sample rate: ' + sampleRate);
@@ -277,10 +277,10 @@ async function main() {
                     '-shortest',
                 ])
                 .output(mp4.name)
-                .on('end', (stdout) => {
+                .on('end', (stdout, stderr) => {
                     console.log('Converted to mp4');
                     console.log('mp4 size: ' + fs.statSync(mp4.name).size);
-                    console.log(stdout);
+                    console.log(stdout + stderr);
                     resolve();
                 })
                 .on('error', (err) => {
@@ -346,7 +346,7 @@ function truncate(s, l) {
 }
 
 function createTags(t, title) {
-    var tags = ['nightcore', truncate(title, 30), truncate('nightcore - ' + title, 30)];
+    var tags = ['nightcore', truncate(title, 30)];
     if (t.length > 0) {
         for (var i = 0; i < t.length; i++) {
             if (typeof t[i] == "undefined") {

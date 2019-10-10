@@ -9,7 +9,7 @@ async function main() {
     var fs = require('fs'), decode = require('unescape'), ffmpeg = require('fluent-ffmpeg'), tmp = require('tmp'), mm = require('music-metadata'),
         ytdl = require('ytdl-core'), pixiv = require('pixiv-api-client'), got = require('got'), { google } = require('googleapis');
 
-    var pixivlink = '', timesDlImageCalled = 0, timesGetVideoCalled = 0, video, videotitle = '', service,
+    var pixivlink = '', timesDlImageCalled = 0, video, videotitle = '', service,
         auth, timesDlCalled = 0, img, sampleRate, ogtags;
     var videos, videoi; // video search results, index in videos array
 
@@ -122,7 +122,7 @@ async function main() {
                     return;
                 }
                 console.log('Returned ' + results.data.items.length + ' videos');
-                if (meOnly !== true) { // If we're not searching for our own videos we need to make sure nothing's too long
+                if (results.data.items.length !== 0 && meOnly !== true) { // If we're not searching for our own videos we need to make sure nothing's too long
                     console.log('Looking for videos that are too long');
                     var ids = [];
                     for (var i = 0; i < results.data.items.length; i++) {
@@ -164,53 +164,51 @@ async function main() {
 
     function getVideo() {
         return new Promise(async (resolve, reject) => {
-            timesGetVideoCalled++;
-            if (timesGetVideoCalled > 5) {
-                reject('getVideo called too many times');
+            var results, timesSearched = 0;
+            do {
+                results = await searchVideo('v=' + randomid() + ' -nightcore', 50); // find a random video id and no nightcore
+                timesSearched++;
+            } while (results.length === 0 && timesSearched <= 4);
+            if (results.length === 0) {
+                reject('Literally zero videos were found :(');
                 return;
             }
-            let results = await searchVideo('v=' + randomid() + ' -nightcore', 50); // find a random video id
-            if (results.length == 0) { // none found
-                console.log('No videos found.');
-                await getVideo(); // try again
-            } else {
-                videoi = random(results.length - 1);
-                video = results[videoi].id.videoId;
-                videos = results;
-                findUniqueId();
-                async function findUniqueId() { // See if we've uploaded a video with this id in the desc
-                    let r = await searchVideo(video, 1, true);
-                    if (r.length == 0) {
-                        console.log(video + ' is a unique video');
-                        videotitle = decode(videos[videoi].snippet.title);
-                        console.log(JSON.stringify(videos[videoi]));
-                        service.videos.list({ // this search returns the tags of the videos
-                            auth: auth,
-                            part: 'snippet',
-                            id: video
-                        }, (err, results3) => {
-                            if (err) {
-                                reject('The YouTube API returned an error: ' + err);
-                                return;
+            videoi = random(results.length - 1);
+            video = results[videoi].id.videoId;
+            videos = results;
+            findUniqueId();
+            async function findUniqueId() { // See if we've uploaded a video with this id in the desc
+                let r = await searchVideo(video, 1, true);
+                if (r.length == 0) {
+                    console.log(video + ' is a unique video');
+                    videotitle = decode(videos[videoi].snippet.title);
+                    console.log(JSON.stringify(videos[videoi]));
+                    service.videos.list({ // this search returns the tags of the videos
+                        auth: auth,
+                        part: 'snippet',
+                        id: video
+                    }, (err, results3) => {
+                        if (err) {
+                            reject('The YouTube API returned an error: ' + err);
+                            return;
+                        }
+                        ogtags = results3.data.items[0].snippet.tags;
+                        if (typeof ogtags == 'undefined') {
+                            ogtags = [];
+                            console.log('No tags found'); // in case someone has the AUDACITY to not tag their video
+                        } else {
+                            for (var i = 0; i < ogtags.length; i++) {
+                                ogtags[i] = decode(ogtags[i]);
                             }
-                            ogtags = results3.data.items[0].snippet.tags;
-                            if (typeof ogtags == 'undefined') {
-                                ogtags = [];
-                                console.log('No tags found'); // in case someone has the AUDACITY to not tag their video
-                            } else {
-                                for (var i = 0; i < ogtags.length; i++) {
-                                    ogtags[i] = decode(ogtags[i]);
-                                }
-                                console.log('Found tags: ' + ogtags.join(', '));
-                            }
-                            resolve();
-                        });
-                    } else {
-                        console.log('Uploaded ' + video + ' before, looking for a new video');
-                        videoi = random(results.length - 1);
-                        video = videos[videoi].id.videoId;
-                        findUniqueId();
-                    }
+                            console.log('Found tags: ' + ogtags.join(', '));
+                        }
+                        resolve();
+                    });
+                } else {
+                    console.log('Uploaded ' + video + ' before, looking for a new video');
+                    videoi = random(results.length - 1);
+                    video = videos[videoi].id.videoId;
+                    findUniqueId();
                 }
             }
         });

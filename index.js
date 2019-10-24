@@ -53,8 +53,9 @@ async function main() {
     function getImage() {
         const pix = new pixiv();
         console.log('Finding an image');
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             pix.login(process.env.PIXIV_USER, process.env.PIXIV_PASS).then(() => {
+                console.log('Logged into pixiv');
                 pix.illustRecommended().then(json => { // Search recommended
                     var i = 0;
                     img = json.illusts[i].image_urls.large;
@@ -67,6 +68,8 @@ async function main() {
                     pixivlink = 'https://www.pixiv.net/member_illust.php?mode=medium&illust_id=' + json.illusts[i].id;
                     resolve();
                 });
+            }).catch((e) => {
+                reject(e);
             });
         });
     }

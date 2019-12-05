@@ -282,7 +282,7 @@ async function main() {
                     6: negate histogram so it's black (most pixiv images are light colored)
                     7: overlay histogram over image */
                     '-filter_complex', '[0:v]pad=ceil(iw/2)*2:ceil(ih/2)*2[pv];[1:a]asetrate=' + (sampleRate * 1.265) + '[n];[n]asplit[nh][no];' +
-                        '[nh]ahistogram=rheight=1[h];[h][pv]scale2ref=h=100[hs][pv];[hs]negate[hn];[pv][hn]overlay=(W-w)/2:H-h:shortest=1',
+                        '[nh]ahistogram=rheight=1[h];[h][pv]scale2ref=h=ih*0.1[hs][pv];[hs]negate[hn];[pv][hn]overlay=(W-w)/2:H-h:shortest=1',
                     '-map', '[no]',
                     '-tune', 'stillimage',
                     '-pix_fmt', 'yuv420p',

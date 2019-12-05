@@ -278,10 +278,11 @@ async function main() {
                     2: set sample rate to 1.265 * current sample rate
                     3: split newly sped up audio into 2 outputs (one is mapped to the final audio track, one is used for the histogram)
                     4: create histogram
-                    5: negate histogram so it's black (most pixiv images are light colored)
-                    6: overlay histogram over image */
+                    5: scale histogram to height 100px
+                    6: negate histogram so it's black (most pixiv images are light colored)
+                    7: overlay histogram over image */
                     '-filter_complex', '[0:v]pad=ceil(iw/2)*2:ceil(ih/2)*2[pv];[1:a]asetrate=' + (sampleRate * 1.265) + '[n];[n]asplit[nh][no];' +
-                        '[nh]ahistogram=rheight=1,scale=iw:100[h];[h]negate[hn];[pv][hn]overlay=(W-w)/2:H-h:shortest=1',
+                        '[nh]ahistogram=rheight=1[h];[h][pv]scale2ref=h=100[hs][pv];[hs]negate[hn];[pv][hn]overlay=(W-w)/2:H-h:shortest=1',
                     '-map', '[no]',
                     '-tune', 'stillimage',
                     '-pix_fmt', 'yuv420p',

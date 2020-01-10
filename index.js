@@ -85,7 +85,7 @@ async function main() {
                 reject("For some reason the image won't download");
                 return;
             }
-            const gotStream = got.stream(img, { encoding: null, headers: { Referer: 'http://www.pixiv.net/' } });
+            const gotStream = got.stream(img, { headers: { Referer: 'http://www.pixiv.net/' } });
             gotStream.on('error', async (e) => {
                 console.log('Error downloading image');
                 console.log(e);

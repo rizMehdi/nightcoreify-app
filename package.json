@@ -4,15 +4,15 @@
   "description": "script that automatically creates nightcore and uploads it",
   "main": "index.js",
   "dependencies": {
-    "dotenv": "^8.1.0",
+    "dotenv": "^8.2.0",
     "fluent-ffmpeg": "^2.1.2",
-    "googleapis": "^42.0.0",
-    "got": "^9.6.0",
-    "music-metadata": "^4.5.3",
+    "googleapis": "^46.0.0",
+    "got": "^10.2.1",
+    "music-metadata": "^6.1.1",
     "pixiv-api-client": "^0.22.0",
     "tmp": "^0.1.0",
     "unescape": "^1.0.1",
-    "ytdl-core": "^0.29.5"
+    "ytdl-core": "^1.0.6"
   },
   "devDependencies": {},
   "author": "intrlocutr"

@@ -6,13 +6,13 @@
   "dependencies": {
     "dotenv": "^8.2.0",
     "fluent-ffmpeg": "^2.1.2",
-    "googleapis": "^46.0.0",
-    "got": "^10.2.1",
-    "music-metadata": "^6.1.1",
+    "googleapis": "^52.1.0",
+    "got": "^11.5.0",
+    "music-metadata": "^7.0.0",
     "pixiv-api-client": "^0.22.0",
-    "tmp": "^0.1.0",
+    "tmp": "^0.2.1",
     "unescape": "^1.0.1",
-    "ytdl-core": "^1.0.6"
+    "ytdl-core": "^3.1.2"
   },
   "devDependencies": {},
   "author": "intrlocutr"

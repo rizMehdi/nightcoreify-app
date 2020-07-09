@@ -346,11 +346,16 @@ async function main() {
 function parseDuration(d) {
     var regex = /(-)?P(?:([.,\d]+)Y)?(?:([.,\d]+)M)?(?:([.,\d]+)W)?(?:([.,\d]+)D)?T(?:([.,\d]+)H)?(?:([.,\d]+)M)?(?:([.,\d]+)S)?/;
     var matches = d.match(regex);
-    return Number(matches[4] === undefined ? 0 : matches[4] * 604800) + // weeks (yes weeks :/)
-        Number(matches[5] === undefined ? 0 : matches[5] * 86400) +     // days
-        Number(matches[6] === undefined ? 0 : matches[6] * 3600) +      // hours
-        Number(matches[7] === undefined ? 0 : matches[7] * 60) +        // minutes
-        Number(matches[8] === undefined ? 0 : matches[8]);              // seconds
+    try {
+        return Number(matches[4] === undefined ? 0 : matches[4] * 604800) + // weeks (yes weeks :/)
+            Number(matches[5] === undefined ? 0 : matches[5] * 86400) +     // days
+            Number(matches[6] === undefined ? 0 : matches[6] * 3600) +      // hours
+            Number(matches[7] === undefined ? 0 : matches[7] * 60) +        // minutes
+            Number(matches[8] === undefined ? 0 : matches[8]);              // seconds
+    } catch (e) {
+        console.log('Error while parsing duration: ' + e);
+        return 1000;
+    }
 }
 
 function truncate(s, l) {

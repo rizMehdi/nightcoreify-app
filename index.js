@@ -17,7 +17,7 @@ async function main() {
         mp3 = tmp.fileSync({ postfix: '.mp3' }), jpg = tmp.fileSync({ postfix: '.jpg' });
 
     try {
-        ffmpeg.setFfmpegPath(process.cwd() + '/ffmpeg');
+        ffmpeg.setFfmpegPath('/opt/bin/ffmpeg');
         ytAuth();
         await getImage();
         await dlImage();

@@ -65,7 +65,11 @@ async function main() {
                             reject('No valid images!');
                             return;
                         }
-                        img = json.illusts[i].image_urls.large;
+                        if (typeof(json.illusts[i]) != 'undefined') {
+                            img = json.illusts[i].image_urls.large;
+                        } else {
+                            console.log('Warning: no image urls available');
+                        }
                     } while(typeof img == 'undefined' && attempts < json.illusts.length);
                     console.log('Image id: ' + json.illusts[i].id);
                     console.log('Image url: ' + img);

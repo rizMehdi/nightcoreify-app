@@ -252,8 +252,8 @@ async function main() {
                 .output(mp3.name)
                 .on('end', (stdout, stderr) => {
                     console.log('Converted to mp3');
-                    console.log('mp3 size: ' + fs.statSync(mp3.name).size);
                     console.log(stdout + stderr);
+                    console.log('mp3 size: ' + fs.statSync(mp3.name).size);
                     mm.parseFile(mp3.name, { native: true }).then(metadata => {
                         sampleRate = metadata.format.sampleRate;
                         console.log('mp3 sample rate: ' + sampleRate);
@@ -296,8 +296,8 @@ async function main() {
                 .output(mp4.name)
                 .on('end', (stdout, stderr) => {
                     console.log('Converted to mp4');
-                    console.log('mp4 size: ' + fs.statSync(mp4.name).size);
                     console.log(stdout + stderr);
+                    console.log('mp4 size: ' + fs.statSync(mp4.name).size);
                     resolve();
                 })
                 .on('error', (err) => {

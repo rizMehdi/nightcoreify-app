@@ -1,6 +1,6 @@
 {
   "name": "nightcoreify",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "script that automatically creates nightcore and uploads it",
   "main": "index.js",
   "dependencies": {

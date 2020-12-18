@@ -6,7 +6,7 @@ if (!!(process.env.LAMBDA_TASK_ROOT || false)) { // if we're running in AWS Lamb
 
 async function main() {
     require('dotenv').config();
-    var fs = require('fs'), decode = require('unescape'), ffmpeg = require('fluent-ffmpeg'), tmp = require('tmp'), mm = require('music-metadata'),
+    const fs = require('fs'), decode = require('unescape'), ffmpeg = require('fluent-ffmpeg'), tmp = require('tmp'), mm = require('music-metadata'),
         ytdl = require('ytdl-core'), pixiv = require('pixiv-api-client'), got = require('got'), { google } = require('googleapis');
 
     var pixivlink = '', timesDlImageCalled = 0, video, videotitle = '', service,

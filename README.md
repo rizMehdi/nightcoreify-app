@@ -17,6 +17,7 @@ Also, thanks Google, for making your API so enormous. ;)
 
 ## Stuff to add in the future
 
+- Better way of finding random videos. The current method tends to return a bunch of videos with seemingly random strings as names, and I want actual songs.
 - ~~Experiment with FFmpeg options to get a faster encode time. The thought of "experimenting with FFmpeg" is giving me flashbacks.~~ The audio visualizer is what's taking so long. I don't want to get rid of it though, it looks cool.
 - Only choose YouTube videos that won't get claimed. This could be achieved by searching through a pre-defined set of royalty free music channels, or somehow getting the "Music in this video" data directly from the YouTube Data API (the presence of that data means YT has the song in their DB and they'll claim it). The reason I'm worried about this is this bot is literally a DMCA bomb of nuclear proportions for me.
 - A nicer looking audio visualizer.

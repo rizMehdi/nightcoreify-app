@@ -2,4 +2,3 @@ google-api-python-client >= 1.12.8
 google-auth-oauthlib >= 0.4.2
 google-auth-httplib2 >= 0.0.4
 youtube_dl >= 2021.3.14
-mutagen >= 1.45.1

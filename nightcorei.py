@@ -1,6 +1,5 @@
 import json
 import subprocess
-import mutagen
 import googleapiclient.discovery
 import googleapiclient.errors
 from google.oauth2.credentials import Credentials
@@ -26,6 +25,9 @@ M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats', 'AnimeBlush', 'Melanime
 # Use the more volatile 'sort by' methods on Reddit to avoid selecting the same image twice.
 REDDIT_SORT = ('controversial', 'rising', 'new')
 FILTERED = ' is sus!'
+MAX_VID_LENGTH = 240
+FRAME_RATE = '30'
+AUDIO_SAMPLE_RATE = 44100
 SPEED_FACTOR = 1.265
 REQ_HEADERS = {
     'User-Agent': 'nightcoreify:2.0 (https://github.com/intrlocutr/nightcoreify)'}
@@ -53,7 +55,7 @@ def main(event=None, context=None):
         audio_file_template = str(tmp_dir / '%(id)s.%(ext)s')
         audio_codec = 'wav'
         dl_opts = {
-            'format': 'bestaudio/best',
+            'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': audio_codec,
@@ -98,7 +100,7 @@ def random_image(dir: Path) -> tuple:
     """Finds and downloads a random image, and saves it to the directory `dir` (`Path`). Returns a 2-tuple (`Path` to saved image, permalink)"""
 
     reddit_json_url = parse.urljoin(REDDIT_URL, 'r/%s/%s.json' %
-                                (choice(M_LADY), choice(REDDIT_SORT)))
+                                    (choice(M_LADY), choice(REDDIT_SORT)))
     print('Reddit, do your thing!!1! Load ' + reddit_json_url)
     with request.urlopen(request.Request(reddit_json_url, headers=REQ_HEADERS)) as res:
         data = json.loads(res.read())
@@ -137,7 +139,7 @@ def random_image(dir: Path) -> tuple:
 
 
 def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
-    """Finds a random song. Returns a 3-tuple (id, title, tags)"""
+    """Finds a random song on `youtube`. Returns a 3-tuple (id, title, tags)"""
 
     q = 'v=%s -nightcore' % str(uuid4())[:4]
     print('Search for ' + q)
@@ -161,14 +163,15 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     def vid_filter(item):
         """Filter out videos not matching these criteria:
 
-        - Video must be 6m30s long or shorter
-        - Uploader channel must not end in " - Topic" as those are instant copyclaims"""
-        ret = parse_isoduration(item['contentDetails']['duration']) <= 390 \
+        - Video must not be longer than `MAX_VID_LENGTH`
+        - Uploader channel must not end in " - Topic" as those are instant copyclaims, not like it matters."""
+        ret = parse_isoduration(item['contentDetails']['duration']) <= MAX_VID_LENGTH \
             and not match(r'^.* - Topic$', item['snippet']['channelTitle'])
         if not ret:
             print(item['id'] + FILTERED)
         return ret
     items_det = list(filter(vid_filter, res_det['items']))
+    print('After filtering videos, %d remain' % len(items_det))
 
     my_choice = choice(items_det)
     #url = parse.urljoin(YT_URL, my_choice['id'])
@@ -184,39 +187,38 @@ def create_video(audio_file: Path, img_path: Path, out_to: Path):
     """Creates a new nightcore video from the unprocessed audio file at `audio_file` and the image at `img_path`,
     and writes the video to `out_to`. Returns the size of the new video file"""
 
-    new_rate = int(mutagen.File(audio_file).info.sample_rate * SPEED_FACTOR)
     cmd = [
         getenv('FFMPEG_BIN', 'ffmpeg'),
+        '-r', FRAME_RATE,
         '-loop', '1',
         '-i', str(img_path),
         '-i', str(audio_file),
-        '-c:v', 'libx264',
-        '-c:a', 'aac',
-        # 1: pad image so the dimensions are guaranteed to be even
-        # 2: set sample rate to new rate
-        # 3: split newly sped up audio into 2 outputs (one is mapped to the final audio track, one is used for the histogram. That is just how it has to work...)
-        # 4: create histogram
-        # 5: scale histogram height to 10% of image
-        # 6: negate histogram so it's black
-        # 7: overlay histogram on image
-        '-filter_complex', ('[0:v]pad=ceil(iw/2)*2:ceil(ih/2)*2[pv];[1:a]asetrate=%d[n];[n]asplit[nh][no];' % new_rate) +
-        '[nh]ahistogram=rheight=1[h];[h][pv]scale2ref=h=ih*0.1[hs][pv];[hs]negate[hn];[pv][hn]overlay=(W-w)/2:H-h:shortest=1',
-        '-map', '[no]',
-        '-tune', 'stillimage',
-        '-pix_fmt', 'yuv420p',
-        '-preset', 'ultrafast',
         '-shortest',
+        '-filter_complex',  # Scale the input image to 720p
+                            '[0:v]scale=1280:720[i];' +
+                            # Increase the sample rate of the audio (to increase pitch & tempo),
+                            # downsample to original rate (sanity measure), split to 2 streams
+                            '[1:a]asetrate={rate}*{speed},aresample={rate},asplit[a][a_waves];'.format(rate=AUDIO_SAMPLE_RATE, speed=SPEED_FACTOR) +
+                            # One of the audio streams will be used for generating the waveform,
+                            # other is for final output.
+                            '[a_waves]showwaves=size=1280x150:mode=cline:r=%s:colors=Black[waves];' % FRAME_RATE +
+                            # Overlay waveform on original image. Also make final duration as short as possible.
+                            '[i][waves]overlay=x=(W-w):y=(H-h):shortest=1',
+        '-map', '[a]',
+        # ffmpeg likes having the frame rate set twice, don't ask me why.
+        '-r', FRAME_RATE,
+        '-pix_fmt', 'yuv420p',
         '-y',
-        str(out_to),
+        str(out_to)
     ]
     # touch the file we are outputting to so if ffmpeg throws a fit, at least we'll know because the size will be 0.
+    # depending on when error is thrown ffmpeg may or may not create a blank file
     out_to.touch()
     print('ffmpeg command: ' + ' '.join(cmd))
-    ffmpeg = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # ffmpeg logs to stderr
-    _, err = ffmpeg.communicate()
-    print(err.decode('utf-8'))
+    # Will write to stderr, which is where ffmpeg logs to.
+    ffmpeg = subprocess.Popen(cmd, shell=False)
+    ffmpeg.communicate()
+    print('encoding done')
 
     return out_to.stat().st_size
 

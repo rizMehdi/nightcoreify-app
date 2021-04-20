@@ -195,8 +195,8 @@ def create_video(audio_file: Path, img_path: Path, out_to: Path):
         '-i', str(img_path),
         '-i', str(audio_file),
         '-shortest',
-        '-filter_complex',  # Scale the input image to 720p
-                            '[0:v]scale=1280:720[i];' +
+        '-filter_complex',  # Scale the input image (-2 ensures height is even)
+                            '[0:v]scale=1280:-2[i];' +
                             # Increase the sample rate of the audio (to increase pitch & tempo),
                             # downsample to original rate (sanity measure), split to 2 streams
                             '[1:a]asetrate={rate}*{speed},aresample={rate},asplit[a][a_waves];'.format(rate=AUDIO_SAMPLE_RATE, speed=SPEED_FACTOR) +
@@ -209,6 +209,7 @@ def create_video(audio_file: Path, img_path: Path, out_to: Path):
         # ffmpeg likes having the frame rate set twice, don't ask me why.
         '-r', FRAME_RATE,
         '-pix_fmt', 'yuv420p',
+        '-preset', 'ultrafast',
         '-y',
         str(out_to)
     ]

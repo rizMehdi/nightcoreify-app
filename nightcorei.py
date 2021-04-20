@@ -30,7 +30,7 @@ FRAME_RATE = '30'
 AUDIO_SAMPLE_RATE = 44100
 SPEED_FACTOR = 1.265
 REQ_HEADERS = {
-    'User-Agent': 'nightcoreify:2.0 (https://github.com/intrlocutr/nightcoreify)'}
+    'User-Agent': 'nightcoreify:2.1 (https://github.com/intrlocutr/nightcoreify)'}
 
 
 def main(event=None, context=None):

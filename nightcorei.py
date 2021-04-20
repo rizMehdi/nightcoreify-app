@@ -27,7 +27,7 @@ M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats', 'AnimeBlush', 'Melanime
 REDDIT_SORT = ('controversial', 'rising', 'new')
 FILTERED = ' is sus!'
 MAX_VID_LENGTH = 240
-FRAME_RATE = '30'
+FRAME_RATE = 30
 AUDIO_SAMPLE_RATE = 44100
 SPEED_FACTOR = 1.265
 REQ_HEADERS = {
@@ -184,13 +184,12 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     return (id, title, tags)
 
 
-def create_video(audio_file: Path, img_path: Path, out_to: Path):
+def create_video(audio_file: Path, img_path: Path, out_to: Path) -> int:
     """Creates a new nightcore video from the unprocessed audio file at `audio_file` and the image at `img_path`,
     and writes the video to `out_to`. Returns the size of the new video file"""
 
     cmd = [
         getenv('FFMPEG_BIN', 'ffmpeg'),
-        '-r', FRAME_RATE,
         '-loop', '1',
         '-i', str(img_path),
         '-i', str(audio_file),
@@ -202,12 +201,11 @@ def create_video(audio_file: Path, img_path: Path, out_to: Path):
                             '[1:a]asetrate={rate}*{speed},aresample={rate},asplit[a][a_waves];'.format(rate=AUDIO_SAMPLE_RATE, speed=SPEED_FACTOR) +
                             # One of the audio streams will be used for generating the waveform,
                             # other is for final output.
-                            '[a_waves]showwaves=size=1280x150:mode=cline:r=%s:colors=Black[waves];' % FRAME_RATE +
+                            '[a_waves]showwaves=size=1280x150:mode=cline:r=%d:colors=Black[waves];' % FRAME_RATE +
                             # Overlay waveform on original image. Also make final duration as short as possible.
                             '[i][waves]overlay=x=(W-w):y=(H-h):shortest=1',
         '-map', '[a]',
-        # ffmpeg likes having the frame rate set twice, don't ask me why.
-        '-r', FRAME_RATE,
+        '-r', str(FRAME_RATE),
         '-pix_fmt', 'yuv420p',
         '-preset', 'ultrafast',
         '-y',

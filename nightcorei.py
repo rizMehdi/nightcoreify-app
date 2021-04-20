@@ -1,5 +1,6 @@
 import json
 import subprocess
+import traceback
 import googleapiclient.discovery
 import googleapiclient.errors
 from google.oauth2.credentials import Credentials
@@ -87,8 +88,8 @@ def main(event=None, context=None):
         else:
             raise FileNotFoundError('A blank file is useless.')
 
-    except Exception as e:
-        print(e)
+    except:
+        traceback.print_exc()
         print('I am done with this cruel world.')
     finally:
         if not getenv('KEEP_TEMP'):

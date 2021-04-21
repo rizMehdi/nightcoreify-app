@@ -84,7 +84,7 @@ def main(event=None, context=None):
                 "Please contact my Senpai at the email in my channel description if you're the owner of this content and you'd like it taken down."
             with BytesIO(video) as vid:
                 res = upload_video(vid, s_tags, s_title, desc, youtube)
-            print(str(res))
+            print('Response from YouTube:', json.dumps(res, indent=None))
             # For testing
             """with open(tmp_dir / 'out.mp4', 'wb') as v:
                 v.write(video)"""
@@ -105,7 +105,7 @@ def random_image(dir: Path) -> tuple:
 
     reddit_json_url = parse.urljoin(REDDIT_URL, 'r/%s/%s.json' %
                                     (choice(M_LADY), choice(REDDIT_SORT)))
-    print('Reddit, do your thing!!1! Load ' + reddit_json_url)
+    print('Reddit, do your thing!!1! Load', reddit_json_url)
     with request.urlopen(request.Request(reddit_json_url, headers=REQ_HEADERS)) as res:
         data = json.loads(res.read())
 
@@ -123,7 +123,7 @@ def random_image(dir: Path) -> tuple:
         ret = post['data'].get('post_hint') == 'image' and not post['data'].get(
             'over_18') and '.gif' not in post['data']['url'].lower()
         if not ret:
-            print(post['data'].get('name') + FILTERED)
+            print(post['data'].get('name'), FILTERED)
         return ret
     posts = list(filter(post_filter, data['data']['children']))
     print('After filtering results, %d remain' % len(posts))
@@ -133,8 +133,8 @@ def random_image(dir: Path) -> tuple:
     pic_url = my_pic['data']['url']
     pic_path = dir / Path(basename(parse.urlsplit(pic_url).path))
 
-    print('Selected image ' + permalink)
-    print('Load ' + pic_url)
+    print('Selected image', permalink)
+    print('Load', pic_url)
 
     with request.urlopen(request.Request(pic_url, headers=REQ_HEADERS)) as res, open(pic_path, 'wb') as file:
         file.write(res.read())
@@ -146,7 +146,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     """Finds a random song on `youtube`. Returns a 3-tuple (id, title, tags)"""
 
     q = 'v=%s -nightcore' % str(uuid4())[:4]
-    print('Search for ' + q)
+    print('Search for', q)
     req_vid = youtube.search().list(
         part='snippet',
         maxResults=50,
@@ -173,7 +173,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
         ret = parse_isoduration(item['contentDetails']['duration']) <= MAX_VID_LENGTH \
             and not topic_channel.match(item['snippet']['channelTitle'])
         if not ret:
-            print(item['id'] + FILTERED)
+            print(item['id'], FILTERED)
         return ret
 
     items_det = list(filter(vid_filter, res_det['items']))
@@ -182,7 +182,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     my_choice = choice(items_det)
     #url = parse.urljoin(YT_URL, my_choice['id'])
     id = my_choice['id']
-    print(id + ' it is!')
+    print(id, 'it is!')
     title = unescape(my_choice['snippet']['title'])
     tags = list(unescape(tag) for tag in my_choice['snippet'].get('tags', []))
 
@@ -218,7 +218,7 @@ def create_video(audio_file: Path, img_path: Path) -> bytes:
         '-',
     ]
 
-    print('ffmpeg command: ' + ' '.join(cmd))
+    print('ffmpeg command:', ' '.join(cmd))
     ffmpeg = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print(ffmpeg.stderr.decode('utf-8'))
     print('encoding done')
@@ -227,7 +227,7 @@ def create_video(audio_file: Path, img_path: Path) -> bytes:
 
 
 def upload_video(video: BytesIO, o_tags: list, title: str, desc: str, youtube: googleapiclient.discovery.Resource):
-    """Uploads the video"""
+    """Uploads the video, returns response from `youtube` service"""
 
     title = title.strip()
     tags = create_tags(o_tags, title)
@@ -243,7 +243,6 @@ def upload_video(video: BytesIO, o_tags: list, title: str, desc: str, youtube: g
             'privacyStatus': 'public'
         }
     }
-    print(json.dumps(body, indent=None))
     req = youtube.videos().insert(
         part=','.join(body.keys()) + ',id',
         body=body,

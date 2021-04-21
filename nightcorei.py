@@ -54,14 +54,14 @@ def main(event=None, context=None):
         s_id, s_title, s_tags = random_song(youtube)
 
         audio_file_template = str(tmp_dir / '%(id)s.%(ext)s')
-        audio_codec = 'wav'
+        audio_format = 'wav'
         dl_opts = {
             'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
-                'preferredcodec': audio_codec,
+                'preferredcodec': audio_format,
             }],
-            'audioformat': audio_codec,
+            'audioformat': audio_format,
             'outtmpl': audio_file_template,
             'noplaylist': True,
             'nooverwrites': False,
@@ -74,7 +74,7 @@ def main(event=None, context=None):
         print('Video downloaded')
 
         video = create_video(Path(audio_file_template % {
-            'id': s_id, 'ext': audio_codec}), img_path)
+            'id': s_id, 'ext': audio_format}), img_path)
         vid_size = len(video)
         print('New video size: %d bytes' % vid_size)
 
@@ -215,7 +215,6 @@ def create_video(audio_file: Path, img_path: Path) -> bytes:
         '-preset', 'ultrafast',
         '-f', 'mp4',
         '-movflags',  'frag_keyframe+empty_moov',
-        '-y',
         '-',
     ]
 
@@ -248,7 +247,7 @@ def upload_video(video: BytesIO, o_tags: list, title: str, desc: str, youtube: g
     req = youtube.videos().insert(
         part=','.join(body.keys()) + ',id',
         body=body,
-        media_body=MediaIoBaseUpload(video, 'video/mp4'),
+        media_body=MediaIoBaseUpload(video, 'video/mp4', chunksize=1024*1024, resumable=True),
     )
     return req.execute()
 

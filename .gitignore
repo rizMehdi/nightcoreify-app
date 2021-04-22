@@ -4,3 +4,5 @@
 deploy/
 *.zip
 __pycache__
+# for testing
+sandbox.py

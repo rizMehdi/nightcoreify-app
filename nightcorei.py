@@ -112,7 +112,11 @@ def random_image(dir: Path) -> tuple:
     if data.get('error') is not None:
         raise Exception('Error %d from Reddit' % data['error'])
 
-    print('Got %d posts' % len(data['data']['children']))
+    initial_posts = len(data['data']['children'])
+    print('Got %d posts' % initial_posts)
+    if initial_posts < 1:
+        raise Exception('No posts found.')
+    del initial_posts
 
     def post_filter(post):
         """Filter out posts not matching these criteria:
@@ -126,7 +130,11 @@ def random_image(dir: Path) -> tuple:
             print(post['data'].get('name'), FILTERED)
         return ret
     posts = list(filter(post_filter, data['data']['children']))
-    print('After filtering results, %d remain' % len(posts))
+    num_posts = len(posts)
+    print('After filtering results, %d remain' % num_posts)
+    if num_posts < 1:
+        raise Exception('No suitable posts found.')
+    del num_posts
 
     my_pic = choice(posts)
     permalink = parse.urljoin(REDDIT_URL, my_pic['data']['permalink'])
@@ -155,7 +163,11 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
         videoCategoryId=YT_CATEGORY
     )
     res_vid = req_vid.execute()
-    print('Got %d videos' % len(res_vid['items']))
+    res_len = len(res_vid['items'])
+    print('Got %d videos' % res_len)
+    if res_len < 1:
+        raise Exception('No videos found.')
+    del res_len
 
     req_det = youtube.videos().list(
         # gets tags and duration of the videos returned by previous search
@@ -177,7 +189,11 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
         return ret
 
     items_det = list(filter(vid_filter, res_det['items']))
-    print('After filtering videos, %d remain' % len(items_det))
+    filtered = len(items_det)
+    print('After filtering videos, %d remain' % filtered)
+    if filtered < 1:
+        raise Exception('No suitable videos found.')
+    del filtered
 
     my_choice = choice(items_det)
     #url = parse.urljoin(YT_URL, my_choice['id'])

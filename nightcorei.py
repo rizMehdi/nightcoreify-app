@@ -89,7 +89,7 @@ def main(event=None, context=None):
             """with open(tmp_dir / 'out.mp4', 'wb') as v:
                 v.write(video)"""
         else:
-            raise FileNotFoundError('A blank file is useless.')
+            raise Exception('A blank video is useless.')
 
     except:
         traceback.print_exc()

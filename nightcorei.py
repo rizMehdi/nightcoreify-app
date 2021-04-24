@@ -226,9 +226,11 @@ def create_video(audio_file: Path, img_path: Path) -> bytes:
                             # Overlay waveform on original image. Also make final duration as short as possible.
                             '[i][waves]overlay=x=(W-w):y=(H-h):shortest=1',
         '-map', '[a]',
+        '-b:a', '128k',
         '-r', str(FRAME_RATE),
         '-pix_fmt', 'yuv420p',
         '-preset', 'ultrafast',
+        '-crf', '30',
         '-f', 'mp4',
         '-movflags',  'frag_keyframe+empty_moov',
         '-',

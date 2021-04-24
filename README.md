@@ -15,6 +15,11 @@ There's no easy way to find a totally random video on YouTube, much less one bel
 
 Also, thanks Google, for making your API so enormous. ;)
 
+## Requirements
+- Python 3.8
+- [`google-api-python-client`](https://github.com/googleapis/google-api-python-client) (and subsequently, a YouTube API key with upload privileges)
+- [`youtube_dl`](https://github.com/ytdl-org/youtube-dl)
+
 ## Stuff to add in the future
 
 - Better way of finding random videos. The current method tends to return a bunch of videos with seemingly random strings as names, and I want actual songs.

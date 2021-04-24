@@ -104,7 +104,7 @@ def random_image(dir: Path) -> tuple:
                                     (choice(M_LADY), choice(REDDIT_SORT)))
     print('Reddit, do your thing!!1! Load', reddit_json_url)
     with request.urlopen(request.Request(reddit_json_url, headers=REQ_HEADERS)) as res:
-        data = json.loads(res.read())
+        data = json.load(res)
 
     if data.get('error') is not None:
         raise Exception('Error %d from Reddit' % data['error'])

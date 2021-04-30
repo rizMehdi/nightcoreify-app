@@ -5,9 +5,9 @@
 # Create a virtual environment first. When running this script for the first time,
 # uncomment the first 3 lines. Recomment them when running this script again!!
 
-#virtualenv deploy
+#python -m virtualenv deploy
 #source deploy/bin/activate
-#pip install -r requirements.txt
+#python -m pip install -r requirements.txt
 cd deploy/lib/python3.8/site-packages
 zip -r9 ${OLDPWD}/lambda.zip .
 cd $OLDPWD

@@ -27,7 +27,7 @@ M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats', 'AnimeBlush', 'Melanime
 # Use the more volatile 'sort by' methods on Reddit to avoid selecting the same image twice.
 REDDIT_SORT = ('controversial', 'rising', 'new')
 FILTERED = ' is sus!'
-MAX_VID_LENGTH = 240
+MAX_VID_LENGTH = 150  # 2m30s
 FRAME_RATE = 24
 AUDIO_SAMPLE_RATE = 44100
 SPEED_FACTOR = 1.265

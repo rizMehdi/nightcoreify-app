@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 # This script simplifies deploying the script as a Lambda function
 
 ###### IMPORTANT ######

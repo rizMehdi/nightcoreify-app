@@ -1,6 +1,7 @@
 .env
 .python-version
 .vscode
+.idea
 deploy/
 *.zip
 __pycache__

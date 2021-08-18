@@ -83,7 +83,7 @@ def main(event=None, context=None):
     s_id, s_title, s_tags = random_song(youtube)
 
     audio_file_template = str(tmp_dir / '%(id)s.%(ext)s')
-    audio_format = 'wav'
+    audio_format = 'mp3'
     dl_opts = {
         'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
         'postprocessors': [{

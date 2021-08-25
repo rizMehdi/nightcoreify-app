@@ -263,18 +263,19 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
         '-i', str(audio_file),
         # ...until the shortest stream (i.e., the audio) ends
         '-shortest',
-        # Scale the input image (keeping aspect ratio) to width 1280 and nearest even height (-2);
-        # even dimensions are required by the encoder
-        '-filter_complex', '[0:v]scale=1280:-2[i];' +
-                           # Increase the sample rate of the audio (to increase pitch & tempo),
-                           # downsample to original rate (sanity measure), split to 2 streams
-                           '[1:a]asetrate={rate}*{speed},aresample={rate},asplit[a][a_waves];'.format(
-                               rate=AUDIO_SAMPLE_RATE, speed=SPEED_FACTOR) +
-                           # One of the audio streams will be used for generating the waveform here,
-                           # other is for final output.
-                           '[a_waves]showwaves=size=1280x%i:mode=cline:colors=Black[waves];' % waves_height +
-                           # Overlay waveform on original image. Also make final duration as short as possible.
-                           '[i][waves]overlay=x=(W-w):y=(H-h):shortest=1',
+        '-filter_complex',
+                    # Scale the input image (keeping aspect ratio) to width 1280 and nearest even height (-2);
+                    # even dimensions are required by the encoder
+                    '[0:v]scale=1280:-2[i];' +
+                    # Increase the sample rate of the audio (to increase pitch & tempo),
+                    # resample at original rate (sanity measure), split to 2 streams
+                    '[1:a]asetrate={rate}*{speed},aresample={rate},asplit[a][a_waves];'.format(
+                        rate=AUDIO_SAMPLE_RATE, speed=SPEED_FACTOR) +
+                    # One of the audio streams will be used for generating the waveform here,
+                    # other is for final output.
+                    '[a_waves]showwaves=size=1280x%i:mode=cline:colors=Black[waves];' % waves_height +
+                    # Overlay waveform on original image. Also make final duration as short as possible.
+                    '[i][waves]overlay=x=(W-w):y=(H-h):shortest=1',
         # Use this audio stream for the output
         '-map', '[a]',
         # Default audio codec for mpegts is mp2 (bleh)

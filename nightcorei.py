@@ -90,7 +90,7 @@ def main(event=None, context=None):
     youtube = googleapiclient.discovery.build(
         'youtube', 'v3', credentials=Credentials(None, **credentials), cache_discovery=False)
 
-    img_path, img_perma = random_image(tmp_dir)
+    img_path, img_perma, img_dimensions = random_image(tmp_dir)
     s_id, s_title, s_tags = random_song(youtube)
 
     audio_file_template = str(tmp_dir / '%(id)s.%(ext)s')
@@ -114,7 +114,7 @@ def main(event=None, context=None):
     print('Original song downloaded')
 
     video = create_video(Path(audio_file_template % {
-        'id': s_id, 'ext': audio_format}), img_path)
+        'id': s_id, 'ext': audio_format}), img_path, img_dimensions)
 
     # For testing
     """with open(tmp_dir / 'out.ts', 'wb') as v:
@@ -131,8 +131,8 @@ def main(event=None, context=None):
 
 @retry
 def random_image(to_dir: Path) -> tuple:
-    """Finds and downloads a random image, and saves it to the directory `to_dir` (`Path`). Returns a 2-tuple (`Path` to
-    saved image, permalink)."""
+    """Finds and downloads a random image, and saves it to the directory `to_dir` (`Path`). Returns a 3-tuple (`Path` to
+    saved image, permalink, (width, height))."""
 
     # Get json w/ random sorting method of random subreddit
     reddit_json_url = parse.urljoin(REDDIT_URL, 'r/%s/%s.json' %
@@ -174,6 +174,8 @@ def random_image(to_dir: Path) -> tuple:
     pic_url = my_pic['data']['url']
     # Create a Path to the image from its base file name in the url we are about to download it from.
     pic_path = to_dir / Path(basename(parse.urlsplit(pic_url).path))
+    dimensions = (my_pic['data']['preview']['images'][0]['source']['width'],
+                  my_pic['data']['preview']['images'][0]['source']['height'])
 
     print('Selected image', permalink)
     print('Load', pic_url)
@@ -181,7 +183,7 @@ def random_image(to_dir: Path) -> tuple:
     with request.urlopen(request.Request(pic_url, headers=REQ_HEADERS)) as res, open(pic_path, 'wb') as file:
         file.write(res.read())
 
-    return pic_path, permalink
+    return pic_path, permalink, dimensions
 
 
 @retry
@@ -244,19 +246,25 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     return v_id, title, tags
 
 
-def create_video(audio_file: Path, img_path: Path) -> BytesIO:
-    """Creates a new nightcore video from the unprocessed audio file at `audio_file` and the image at `img_path`.
-    Returns the new video."""
+def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> BytesIO:
+    """Creates a new nightcore video from the unprocessed audio file at `audio_file` and the image file at `img_path`.
+    `img_dimensions` must be a 2-tuple (width, height). Returns the new video."""
+
+    # Height of the waves will be 25% of the height of the image rounded to the nearest integer.
+    # In this formula we account for the scaling of the image to width 1280 retaining aspect ratio.
+    waves_height = round(img_dimensions[1] / img_dimensions[0] * 1280 * 0.25)
 
     cmd = [
         getenv('FFMPEG_BIN', 'ffmpeg'),
-        # Loop the image until...
+        # Loop the...
         '-loop', '1',
+        # ...image...
         '-i', str(img_path),
         '-i', str(audio_file),
-        # ...the shortest stream (i.e., the audio) ends
+        # ...until the shortest stream (i.e., the audio) ends
         '-shortest',
-        # Scale the input image (-2 ensures height is even)
+        # Scale the input image (keeping aspect ratio) to width 1280 and nearest even height (-2);
+        # even dimensions are required by the encoder
         '-filter_complex', '[0:v]scale=1280:-2[i];' +
                            # Increase the sample rate of the audio (to increase pitch & tempo),
                            # downsample to original rate (sanity measure), split to 2 streams
@@ -264,7 +272,7 @@ def create_video(audio_file: Path, img_path: Path) -> BytesIO:
                                rate=AUDIO_SAMPLE_RATE, speed=SPEED_FACTOR) +
                            # One of the audio streams will be used for generating the waveform here,
                            # other is for final output.
-                           '[a_waves]showwaves=size=1280x150:mode=cline:colors=Black[waves];' +
+                           '[a_waves]showwaves=size=1280x%i:mode=cline:colors=Black[waves];' % waves_height +
                            # Overlay waveform on original image. Also make final duration as short as possible.
                            '[i][waves]overlay=x=(W-w):y=(H-h):shortest=1',
         # Use this audio stream for the output

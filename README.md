@@ -14,11 +14,12 @@ This is in stark contrast to the IMT, wherein the monkeys are given a full array
 
 I wish I had the time and money to invest in studying the nightcore abilities of monkeys. This just isn't feasible though.
 
-In the meantime I have written the next best thing, a simple Python script that:
+In the meantime I have created the next best thing, a Python script that:
 
 - finds and downloads a random (somewhat, see below) song from YouTube
-- finds and downloads a random anime artwork from Reddit (Used to be Pixiv, but their API changes so much. I don't think they want 3rd parties using it)
-- renders a new video, using FFmpeg, with sped up audio + image + audio histogram
+- finds and downloads a random anime artwork from Reddit
+    - I broke tradition and went with Reddit rather than Pixiv because their API is so much friendlier.
+- renders a new video, using FFmpeg, with sped up audio + image + audio visualizer
 - uploads the finished product to YouTube
 
 I currently have this script running in an [AWS Lambda](https://aws.amazon.com/lambda/) function, scheduled with an [EventBridge](https://aws.amazon.com/eventbridge/) rule, and uploading [here](https://youtube.com/c/nightcoreify) every 6 hours. It's deployed on top of [this Lambda layer for FFmpeg](https://github.com/serverlesspub/ffmpeg-aws-lambda-layer).
@@ -26,8 +27,6 @@ I currently have this script running in an [AWS Lambda](https://aws.amazon.com/l
 ### Clarification on "random" YouTube videos
 
 There's no easy way to find a totally random video on YouTube, much less one belonging to a certain category (music in my case), at least that I can find. So what the script does is generate a 4-character string, add `v=` to the beginning, add `-nightcore` to the end so it doesn't nightcore any pre-existing nightcore, and search for it in the music category. This returns a bunch of videos with that 4-character string in the name, or with that string at the beginning of their ID (hence the `v=`). Definitely not random, but this is the best method I can think of with what I have.
-
-Also, thanks Google, for making your API so enormous. ;)
 
 ## Requirements
 - Python 3.8
@@ -37,9 +36,8 @@ Also, thanks Google, for making your API so enormous. ;)
 
 ## Stuff to add in the future
 
-- Better way of finding random videos. The current method tends to return a bunch of videos with seemingly random strings as names, and I want actual songs. Then again, it is [hilarious](https://youtu.be/JgRokRCLVjE) sometimes.
 - Only choose YouTube videos that won't get claimed. This could be achieved by searching through a pre-defined set of royalty free music channels, or somehow getting the "Music in this video" data directly from the YouTube Data API (the presence of that data means YT has the song in their DB and they'll claim it). The reason I'm worried about this is this bot is literally a DMCA bomb of nuclear proportions for me.
-- A nicer looking audio visualizer.
+- ~~Maybe a nicer looking audio visualizer.~~
 
 ## License
 

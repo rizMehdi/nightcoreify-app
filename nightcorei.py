@@ -241,7 +241,12 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     v_id = my_choice['id']
     print(v_id, 'it is!')
     title = unescape(my_choice['snippet']['title'])
-    tags = list(unescape(tag) for tag in my_choice['snippet'].get('tags', []))
+
+    tags = my_choice['snippet'].get('tags')
+    if tags:
+        tags = list(unescape(tag) for tag in tags)
+    else:
+        tags = list()
 
     return v_id, title, tags
 

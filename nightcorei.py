@@ -30,8 +30,8 @@ M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats', 'AnimeBlush', 'Melanime
 REDDIT_SORT = ('controversial', 'rising', 'new')
 # Log this whenever we filter a video or Reddit post
 FILTERED = 'is sus!'
-# Don't use videos that are too long (3m30s)
-MAX_VID_LENGTH = 210
+# Don't use videos that are too long (5 minutes)
+MAX_VID_LENGTH = 300
 # Always use this sample rate for audio
 AUDIO_SAMPLE_RATE = 44100
 # Speed up the audio by this much to create the nightcore effect

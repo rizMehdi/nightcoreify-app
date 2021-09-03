@@ -24,8 +24,7 @@ YT_URL = 'https://youtu.be'
 REDDIT_URL = 'https://www.reddit.com'
 YT_CATEGORY = 10  # music, not like it even matters
 # Subreddits to pull img from, name appropriate
-M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats', 'AnimeBlush', 'Melanime', 'MoeStash',
-          'AnimeSketch', 'TwoDeeArt', 'Patchuu')
+M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats', 'AnimeBlush', 'Melanime', 'MoeStash', 'TwoDeeArt', 'Patchuu')
 # Use the more volatile 'sort by' methods on Reddit to avoid selecting the same image twice.
 REDDIT_SORT = ('controversial', 'rising', 'new')
 # Log this whenever we filter a video or Reddit post

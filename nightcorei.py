@@ -1,5 +1,4 @@
 import json
-import re
 import subprocess
 import traceback
 import googleapiclient.discovery
@@ -29,8 +28,8 @@ M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats', 'AnimeBlush', 'Melanime
 REDDIT_SORT = ('controversial', 'rising', 'new')
 # Log this whenever we filter a video or Reddit post
 FILTERED = 'is sus!'
-# Don't use videos that are too long (5 minutes)
-MAX_VID_LENGTH = 300
+# Don't use videos that are too long (7 minutes)
+MAX_VID_LENGTH = 420
 # Always use this sample rate for audio
 AUDIO_SAMPLE_RATE = 44100
 # Speed up the audio by this much to create the nightcore effect
@@ -216,15 +215,11 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     )
     res_det = req_det.execute()
 
-    topic_channel = re.compile(r'^.* - Topic$')
-
     def vid_filter(item):
         """Filter out videos not matching these criteria:
 
-        - Video must not be longer than `MAX_VID_LENGTH`
-        - Uploader channel must not end in " - Topic" as those are instant copyclaims, not like it matters"""
-        ret = parse_isoduration(item['contentDetails']['duration']) <= MAX_VID_LENGTH and not topic_channel.match(
-            item['snippet']['channelTitle'])
+        - Video must not be longer than `MAX_VID_LENGTH`"""
+        ret = parse_isoduration(item['contentDetails']['duration']) <= MAX_VID_LENGTH)
         if not ret:
             print(item['id'], FILTERED)
         return ret

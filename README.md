@@ -1,20 +1,8 @@
 # nightcoreify
 
-## Introduction to the Infinite Nightcore Theorem
+![This is what most nightcore "artists" look like.](https://i.imgur.com/NeDxKfV.png)
 
-![Photorealistic mock-up of the Infinite Nightcore Theorem.](https://i.imgur.com/NeDxKfV.png)
-
-If you are familiar with the concept of [nightcore](https://en.wikipedia.org/wiki/Nightcore), you are more than likely aware of its cut-and-paste nature; such works are nothing more than a heavily glorified speed-shift of a pre-existing track, with anime artwork and a visualizer slapped on top. It is so simple, that we are effectively wasting human minds on the menial task of creating this, shall we say, [modern art](https://en.wikipedia.org/wiki/Comedian_(artwork)). This harsh reality has led me to develop what I have called the _infinite nightcore theorem_, or INT.
-
-At an abstract level, it's based on the (so far, disproven) _[infinite monkey theorem](https://en.wikipedia.org/wiki/Infinite_monkey_theorem)_, or IMT, in that it involves monkeys generating random content, however, this is where the similarities end. I believe the INT to be much more plausible as its domain is severely limited in comparison to the IMT. The INT grants the monkeys only 1) a supply of music content, 2) a supply of anime artwork, 3) a computer with an audio and video editing suite, and 4) a YouTube account with uploading privileges. Given these resources, a "good" nightcore track will almost surely be produced. The subjects (monkeys) will use the computer and two supplies of content to produce nightcore which they will then upload to YouTube. The computer will be locked down through software to ensure nothing but the desired task of producing nightcore can be fulfilled, and the use of macros is encouraged to increase productivity. Learning from the mistakes of the IMT, the monkeys will be under heavy supervision to ensure they do not engage in any task disadvantageous to the goal of producing and uploading nightcore; such tasks include destroying the computer, never or occasionally making any nightcore, creating so much nightcore that YouTube's servers exceed capacity, etc. Breaks from making nightcore are heavily encouraged so the monkeys can engage in more mentally demanding activities, such as mating, which their human counterparts will likely never experience.
-
-This is in stark contrast to the IMT, wherein the monkeys are given a full array of typewriter keys--with zero restrictions on not only what can be typed, but what can be done with the typewriter--and free will. Considering the behavioral characteristics of monkeys, the intended goal of nightcore is, theoretically, more obtainable in a sweatshop-esque environment.
-
-## Proving the theorem
-
-I wish I had the time and money to invest in studying the nightcore abilities of monkeys. This just isn't feasible though.
-
-In the meantime I have created the next best thing, a Python script that:
+[Nightcore](https://en.wikipedia.org/wiki/Nightcore) is mind-numbingly simple. It's just a speed-shift of a pre-existing track, with anime artwork and a visualizer slapped on top. The harsh reality is, we are wasting human minds on the creation of such low-effort "music." I decided to take matters into my own hands and automate the process. This is a Python script that:
 
 - finds and downloads a random (somewhat, see below) song from YouTube
 - finds and downloads a random anime artwork from Reddit
@@ -34,11 +22,8 @@ There's no easy way to find a totally random video on YouTube, much less one bel
 - [`google-api-python-client`](https://github.com/googleapis/google-api-python-client) (and subsequently, a YouTube API key with upload privileges)
 - [`youtube_dl`](https://github.com/ytdl-org/youtube-dl)
 
-## Stuff to add in the future
-
-- Only choose YouTube videos that won't get claimed. This could be achieved by searching through a pre-defined set of royalty free music channels, or somehow getting the "Music in this video" data directly from the YouTube Data API (the presence of that data means YT has the song in their DB and they'll claim it). The reason I'm worried about this is this bot is literally a DMCA bomb of nuclear proportions for me.
-- ~~Maybe a nicer looking audio visualizer.~~
+Side note: if you dig through the commits in this repo, you'll find that this used to be a Node.js script. I originally wrote it in Node to keep my options open in terms of cloud providers, but rewrote it in Python after I was sure I'd stick with Lambda--and good riddance! Node sucks!
 
 ## License
 
-This software is released under a BSD Zero Clause License.
+This software is released under a BSD Zero Clause License, mostly because I want you to be able to rip off my FFmpeg command. FFmpeg is cool, but it's really annoying to get it to work the way you want it to. Hopefully the hours of hair-pulling that went into writing that command can be useful to someone else as well.

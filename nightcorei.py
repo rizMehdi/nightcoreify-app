@@ -23,7 +23,8 @@ YT_URL = 'https://youtu.be'
 REDDIT_URL = 'https://www.reddit.com'
 YT_CATEGORY = 10  # music, not like it even matters
 # Subreddits to pull img from, name appropriate
-M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats', 'AnimeBlush', 'Melanime', 'MoeStash', 'TwoDeeArt', 'Patchuu')
+M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats',
+          'AnimeBlush', 'Melanime', 'MoeStash', 'TwoDeeArt', 'Patchuu')
 # Use the more volatile 'sort by' methods on Reddit to avoid selecting the same image twice.
 REDDIT_SORT = ('controversial', 'rising', 'new')
 # Don't use videos that are too long (7 minutes)
@@ -69,17 +70,17 @@ def retry(func):
 
 
 def filterer(conditions: dict, id_getter):
-        """Returns a method that verbosely filters items based on `conditions`.
-        `id_getter` should return the id of the item passed to it."""
+    """Returns a method that verbosely filters items based on `conditions`.
+    `id_getter` should return the id of the item passed to it."""
 
-        def inner(item):
-            for reason, condition in zip(conditions, conditions.values()):
-                if not condition(item):
-                    print(id_getter(item), 'is filtered because of', reason)
-                    return False
-            return True
-        
-        return inner
+    def inner(item):
+        for reason, condition in zip(conditions, conditions.values()):
+            if not condition(item):
+                print(id_getter(item), 'is filtered because of', reason)
+                return False
+        return True
+
+    return inner
 
 
 def main(event=None, context=None):
@@ -223,7 +224,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     items_det = list(filter(filterer({
         'duration': lambda i: parse_isoduration(i['contentDetails']['duration']) <= MAX_VID_LENGTH
     }, lambda i: i['id']), res_det['items']))
-    
+
     filtered = len(items_det)
     print('After filtering videos, %d remain' % filtered)
     if filtered < 1:
@@ -262,18 +263,18 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
         # ...until the shortest stream (i.e., the audio) ends
         '-shortest',
         '-filter_complex',
-                    # Scale the input image (keeping aspect ratio) to width 1280 and nearest even height (-2);
-                    # even dimensions are required by the encoder
-                    '[0:v]scale=1280:-2[i];' +
-                    # Increase the sample rate of the audio (to increase pitch & tempo),
-                    # resample at original rate (sanity measure), split to 2 streams
-                    '[1:a]asetrate={rate}*{speed},aresample={rate},asplit[a][a_waves];'.format(
-                        rate=AUDIO_SAMPLE_RATE, speed=SPEED_FACTOR) +
-                    # One of the audio streams will be used for generating the waveform here,
-                    # other is for final output.
-                    '[a_waves]showwaves=size=1280x%i:mode=cline:colors=Black[waves];' % waves_height +
-                    # Overlay waveform on original image. Also make final duration as short as possible.
-                    '[i][waves]overlay=x=(W-w):y=(H-h):shortest=1',
+        # Scale the input image (keeping aspect ratio) to width 1280 and nearest even height (-2);
+        # even dimensions are required by the encoder
+        '[0:v]scale=1280:-2[i];' +
+        # Increase the sample rate of the audio (to increase pitch & tempo),
+        # resample at original rate (sanity measure), split to 2 streams
+        '[1:a]asetrate={rate}*{speed},aresample={rate},asplit[a][a_waves];'.format(
+            rate=AUDIO_SAMPLE_RATE, speed=SPEED_FACTOR) +
+        # One of the audio streams will be used for generating the waveform here,
+        # other is for final output.
+        '[a_waves]showwaves=size=1280x%i:mode=cline:colors=Black[waves];' % waves_height +
+        # Overlay waveform on original image. Also make final duration as short as possible.
+        '[i][waves]overlay=x=(W-w):y=(H-h):shortest=1',
         # Use this audio stream for the output
         '-map', '[a]',
         # Default audio codec for mpegts is mp2 (bleh)

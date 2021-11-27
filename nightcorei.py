@@ -164,7 +164,7 @@ def random_image(to_dir: Path) -> tuple:
     posts = list(filter(filterer({
         'image': lambda i: i['data'].get('post_hint') == 'image',
         'nsfw': lambda i: not i['data'].get('over_18'),
-        'gif': lambda i: '.gif' not in i['data']['url'].lower()
+        'gif': lambda i: '.gif' not in i['data'].get('url').lower()
     }, lambda i: i['data'].get('name')), data['data']['children']))
 
     num_posts = len(posts)
@@ -222,8 +222,8 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     res_det = req_det.execute()
 
     items_det = list(filter(filterer({
-        'duration': lambda i: parse_isoduration(i['contentDetails']['duration']) <= MAX_VID_LENGTH
-    }, lambda i: i['id']), res_det['items']))
+        'duration': lambda i: parse_isoduration(i['contentDetails'].get('duration')) <= MAX_VID_LENGTH
+    }, lambda i: i.get('id')), res_det['items']))
 
     filtered = len(items_det)
     print('After filtering videos, %d remain' % filtered)

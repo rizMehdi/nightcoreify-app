@@ -219,7 +219,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
         """Filter out videos not matching these criteria:
 
         - Video must not be longer than `MAX_VID_LENGTH`"""
-        ret = parse_isoduration(item['contentDetails']['duration']) <= MAX_VID_LENGTH)
+        ret = parse_isoduration(item['contentDetails']['duration']) <= MAX_VID_LENGTH
         if not ret:
             print(item['id'], FILTERED)
         return ret

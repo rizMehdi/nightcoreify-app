@@ -26,8 +26,6 @@ YT_CATEGORY = 10  # music, not like it even matters
 M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats', 'AnimeBlush', 'Melanime', 'MoeStash', 'TwoDeeArt', 'Patchuu')
 # Use the more volatile 'sort by' methods on Reddit to avoid selecting the same image twice.
 REDDIT_SORT = ('controversial', 'rising', 'new')
-# Log this whenever we filter a video or Reddit post
-FILTERED = 'is sus!'
 # Don't use videos that are too long (7 minutes)
 MAX_VID_LENGTH = 420
 # Always use this sample rate for audio
@@ -68,6 +66,20 @@ def retry(func):
                     raise e
 
     return inner
+
+
+def filterer(conditions: dict, id_getter):
+        """Returns a method that verbosely filters items based on `conditions`.
+        `id_getter` should return the id of the item passed to it."""
+
+        def inner(item):
+            for reason, condition in zip(conditions, conditions.values()):
+                if not condition(item):
+                    print(id_getter(item), 'is filtered because of', reason)
+                    return False
+            return True
+        
+        return inner
 
 
 def main(event=None, context=None):
@@ -148,19 +160,12 @@ def random_image(to_dir: Path) -> tuple:
         raise Exception('No posts found.')
     del initial_posts
 
-    def post_filter(post):
-        """Filter out posts not matching these criteria:
+    posts = list(filter(filterer({
+        'image': lambda i: i['data'].get('post_hint') == 'image',
+        'nsfw': lambda i: not i['data'].get('over_18'),
+        'gif': lambda i: '.gif' not in i['data']['url'].lower()
+    }, lambda i: i['data'].get('name')), data['data']['children']))
 
-        - Is an image
-        - Is not NSFW
-        - Is not a GIF"""
-        ret = post['data'].get('post_hint') == 'image' and not post['data'].get(
-            'over_18') and '.gif' not in post['data']['url'].lower()
-        if not ret:
-            print(post['data'].get('name'), FILTERED)
-        return ret
-
-    posts = list(filter(post_filter, data['data']['children']))
     num_posts = len(posts)
     print('After filtering results, %d remain' % num_posts)
     if num_posts < 1:
@@ -215,16 +220,10 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     )
     res_det = req_det.execute()
 
-    def vid_filter(item):
-        """Filter out videos not matching these criteria:
-
-        - Video must not be longer than `MAX_VID_LENGTH`"""
-        ret = parse_isoduration(item['contentDetails']['duration']) <= MAX_VID_LENGTH
-        if not ret:
-            print(item['id'], FILTERED)
-        return ret
-
-    items_det = list(filter(vid_filter, res_det['items']))
+    items_det = list(filter(filterer({
+        'duration': lambda i: parse_isoduration(i['contentDetails']['duration']) <= MAX_VID_LENGTH
+    }, lambda i: i['id']), res_det['items']))
+    
     filtered = len(items_det)
     print('After filtering videos, %d remain' % filtered)
     if filtered < 1:

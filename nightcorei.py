@@ -165,7 +165,7 @@ def random_image(to_dir: Path) -> tuple:
         'image': lambda i: i['data'].get('post_hint') == 'image',
         'nsfw': lambda i: not i['data'].get('over_18'),
         'gif': lambda i: '.gif' not in i['data'].get('url').lower()
-    }, lambda i: i['data'].get('name')), data['data']['children']))
+    }, lambda i: i['data'].get('permalink')), data['data']['children']))
 
     num_posts = len(posts)
     print('After filtering results, %d remain' % num_posts)

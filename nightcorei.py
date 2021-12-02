@@ -25,8 +25,6 @@ YT_CATEGORY = 10  # music, not like it even matters
 # Subreddits to pull img from, name appropriate
 M_LADY = ('awwnime', 'Moescape', 'Moescene', 'headpats',
           'AnimeBlush', 'Melanime', 'MoeStash', 'TwoDeeArt', 'Patchuu')
-# Use the more volatile 'sort by' methods on Reddit to avoid selecting the same image twice.
-REDDIT_SORT = ('controversial', 'rising', 'new')
 # Don't use videos that are too long (7 minutes)
 MAX_VID_LENGTH = 420
 # Always use this sample rate for audio
@@ -145,9 +143,9 @@ def random_image(to_dir: Path) -> tuple:
     """Finds and downloads a random image, and saves it to the directory `to_dir` (`Path`). Returns a 3-tuple (`Path` to
     saved image, permalink, (width, height))."""
 
-    # Get json w/ random sorting method of random subreddit
-    reddit_json_url = parse.urljoin(REDDIT_URL, 'r/%s/%s.json' %
-                                    (choice(M_LADY), choice(REDDIT_SORT)))
+    # Get json of 100 newest posts of random subreddit
+    reddit_json_url = parse.urljoin(REDDIT_URL, 'r/%s/new.json?limit=100' %
+                                    (choice(M_LADY)))
     print('Reddit, do your thing!!1! Load', reddit_json_url)
     with request.urlopen(request.Request(reddit_json_url, headers=REQ_HEADERS)) as res:
         data = json.load(res)

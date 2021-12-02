@@ -18,6 +18,7 @@ from posixpath import basename
 from tempfile import mkdtemp
 from time import sleep
 from shutil import rmtree
+from math import isclose
 
 YT_URL = 'https://youtu.be'
 REDDIT_URL = 'https://www.reddit.com'
@@ -29,6 +30,8 @@ M_LADY = ('awwnime', 'Moescape', 'Moescene', 'Animewallpaper', 'streetmoe', 'Ani
 MAX_VID_LENGTH = 420
 # Always use this sample rate for audio
 AUDIO_SAMPLE_RATE = 44100
+# Target this aspect ratio for images
+ASPECT_RATIO = 16 / 9
 # Speed up the audio by this much to create the nightcore effect
 SPEED_FACTOR = 1.265
 # I use mpegts because ffmpeg encodes it quickly and it's designed to be written to stdout.
@@ -167,6 +170,9 @@ def random_image(to_dir: Path) -> tuple:
 
     print('Filtering posts')
     posts = list(filter(filterer({
+        'dimensions': lambda i: 'preview' in i['data'] and isclose(
+            i['data']['preview']['images'][0]['source']['width'] / i['data']['preview']['images'][0]['source']['height'],
+            ASPECT_RATIO, rel_tol=0.04),
         'image': lambda i: i['data'].get('post_hint') == 'image',
         'nsfw': lambda i: not i['data'].get('over_18'),
         'gif': lambda i: '.gif' not in i['data'].get('url').lower()

@@ -81,6 +81,16 @@ def filterer(conditions: dict, id_getter):
     return inner
 
 
+def check_results_len(results):
+    """Prints the length of `results` and throws an exception if that
+    length is 0."""
+
+    res_len = len(results)
+    print('Got %d results.' % res_len)
+    if res_len < 1:
+        raise Exception('No results.')
+
+
 def main(event=None, context=None):
     """The function that does the things."""
 
@@ -153,23 +163,16 @@ def random_image(to_dir: Path) -> tuple:
     if data.get('error') is not None:
         raise Exception('Error %d from Reddit' % data['error'])
 
-    initial_posts = len(data['data']['children'])
-    print('Got %d posts' % initial_posts)
-    if initial_posts < 1:
-        raise Exception('No posts found.')
-    del initial_posts
+    check_results_len(data['data']['children'])
 
+    print('Filtering posts')
     posts = list(filter(filterer({
         'image': lambda i: i['data'].get('post_hint') == 'image',
         'nsfw': lambda i: not i['data'].get('over_18'),
         'gif': lambda i: '.gif' not in i['data'].get('url').lower()
     }, lambda i: i['data'].get('permalink')), data['data']['children']))
 
-    num_posts = len(posts)
-    print('After filtering results, %d remain' % num_posts)
-    if num_posts < 1:
-        raise Exception('No suitable posts found.')
-    del num_posts
+    check_results_len(posts)
 
     my_pic = choice(posts)
     permalink = parse.urljoin(REDDIT_URL, my_pic['data']['permalink'])
@@ -206,11 +209,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
         videoCategoryId=YT_CATEGORY
     )
     res_vid = req_vid.execute()
-    res_len = len(res_vid['items'])
-    print('Got %d videos' % res_len)
-    if res_len < 1:
-        raise Exception('No videos found.')
-    del res_len
+    check_results_len(res_vid['items'])
 
     req_det = youtube.videos().list(
         # gets tags and duration of the videos returned by previous search
@@ -219,15 +218,12 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     )
     res_det = req_det.execute()
 
+    print('Filtering videos')
     items_det = list(filter(filterer({
         'duration': lambda i: parse_isoduration(i['contentDetails'].get('duration')) <= MAX_VID_LENGTH
     }, lambda i: i.get('id')), res_det['items']))
 
-    filtered = len(items_det)
-    print('After filtering videos, %d remain' % filtered)
-    if filtered < 1:
-        raise Exception('No suitable videos found.')
-    del filtered
+    check_results_len(items_det)
 
     my_choice = choice(items_det)
     v_id = my_choice['id']

@@ -234,6 +234,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     my_choice = choice(items_det)
     v_id = my_choice['id']
     print(v_id, 'it is!')
+    print('Duration is', my_choice['contentDetails'].get('duration'))
     title = unescape(my_choice['snippet']['title'])
 
     tags = my_choice['snippet'].get('tags')

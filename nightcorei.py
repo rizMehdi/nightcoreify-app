@@ -34,7 +34,7 @@ AUDIO_SAMPLE_RATE = 44100
 ASPECT_RATIO = 16 / 9
 # Speed up the audio by this much to create the nightcore effect
 SPEED_FACTOR = 1.265
-# I use mpegts because ffmpeg encodes it quickly and it's designed to be written to stdout.
+# Use mpegts because ffmpeg encodes it quickly and it's designed to be written to stdout
 VIDEO_MIME = 'video/MP2T'
 CONTAINER_FORMAT = 'mpegts'
 # When making http requests, use these headers. UA is required for Reddit
@@ -112,6 +112,7 @@ def main(event=None, context=None):
     youtube = googleapiclient.discovery.build(
         'youtube', 'v3', credentials=Credentials(None, **credentials), cache_discovery=False)
 
+    # Get the random image and song
     img_path, img_perma, img_dimensions = random_image(tmp_dir)
     s_id, s_title, s_tags = random_song(youtube)
 
@@ -121,6 +122,7 @@ def main(event=None, context=None):
         # ytdl can encode the downloaded audio at a specific sample rate
         'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
         'postprocessors': [{
+            # also, it can create an audio file in whatever format on its own
             'key': 'FFmpegExtractAudio',
             'preferredcodec': audio_format,
         }],
@@ -148,6 +150,8 @@ def main(event=None, context=None):
     print('Response from YouTube:', json.dumps(res, indent=None))
 
     print('Cleaning up')
+    # Lambda has 512 MB of temp storage, which is not guaranteed to persist.
+    # But if it does persist for some reason, it shouldn't be cluttered.
     rmtree(tmp_dir, ignore_errors=True)
 
 
@@ -170,11 +174,13 @@ def random_image(to_dir: Path) -> tuple:
 
     print('Filtering posts')
     posts = list(filter(filterer({
+        # Try to get images relatively close to 16:9
         'dimensions': lambda i: 'preview' in i['data'] and isclose(
             i['data']['preview']['images'][0]['source']['width'] / i['data']['preview']['images'][0]['source']['height'],
             ASPECT_RATIO, rel_tol=0.04),
         'image': lambda i: i['data'].get('post_hint') == 'image',
         'nsfw': lambda i: not i['data'].get('over_18'),
+        # Cannot use gifs
         'gif': lambda i: '.gif' not in i['data'].get('url').lower()
     }, lambda i: i['data'].get('permalink')), data['data']['children']))
 
@@ -183,8 +189,10 @@ def random_image(to_dir: Path) -> tuple:
     my_pic = choice(posts)
     permalink = parse.urljoin(REDDIT_URL, my_pic['data']['permalink'])
     pic_url = my_pic['data']['url']
+
     # Create a Path to the image from its base file name in the url we are about to download it from.
     pic_path = to_dir / Path(basename(parse.urlsplit(pic_url).path))
+
     dimensions = (my_pic['data']['preview']['images'][0]['source']['width'],
                   my_pic['data']['preview']['images'][0]['source']['height'])
 
@@ -235,10 +243,11 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     v_id = my_choice['id']
     print(v_id, 'it is!')
     print('Duration is', my_choice['contentDetails'].get('duration'))
+
+    # YouTube API returns titles with HTML escape characters
     title = unescape(my_choice['snippet']['title'])
 
-    tags = my_choice['snippet'].get('tags')
-    if tags:
+    if tags := my_choice['snippet'].get('tags'):
         tags = list(unescape(tag) for tag in tags)
     else:
         tags = list()
@@ -294,6 +303,7 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
     ffmpeg = subprocess.run(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     print('ffmpeg finished in', time.time() - start_time, 'seconds')
+    
     # ffmpeg logs to stderr
     print(ffmpeg.stderr.decode('utf-8'))
 

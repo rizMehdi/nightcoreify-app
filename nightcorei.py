@@ -1,6 +1,7 @@
 import json
 import subprocess
 import traceback
+import time
 import googleapiclient.discovery
 import googleapiclient.errors
 from google.oauth2.credentials import Credentials
@@ -16,7 +17,6 @@ from random import choice
 from html import unescape
 from posixpath import basename
 from tempfile import mkdtemp
-from time import sleep
 from shutil import rmtree
 from math import isclose
 
@@ -61,7 +61,7 @@ def retry(func):
                 traceback.print_exc()
                 if n < runs - 1:
                     print('Retrying in %d seconds...' % timeout)
-                    sleep(timeout)
+                    time.sleep(timeout)
                     timeout *= 2
                 else:
                     print('Giving up.')
@@ -290,8 +290,10 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
 
     # Log the ffmpeg command for debugging
     print('ffmpeg command:', ' '.join(cmd))
+    start_time = time.time()
     ffmpeg = subprocess.run(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
+    print('ffmpeg finished in', time.time() - start_time, 'seconds')
     # ffmpeg logs to stderr
     print(ffmpeg.stderr.decode('utf-8'))
 

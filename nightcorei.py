@@ -303,7 +303,7 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
     ffmpeg = subprocess.run(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     print('ffmpeg finished in', time.time() - start_time, 'seconds')
-    
+
     # ffmpeg logs to stderr
     print(ffmpeg.stderr.decode('utf-8'))
 
@@ -319,7 +319,9 @@ def upload_video(video: BytesIO, o_tags: list, title: str, desc: str, youtube: g
     """Uploads the video, returns response from `youtube` service."""
 
     title = title.strip()
-    tags = create_tags(o_tags)
+    
+    if len(o_tags) > 0:
+        tags = create_tags(o_tags)
 
     body = {
         'snippet': {

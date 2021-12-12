@@ -18,7 +18,6 @@ from html import unescape
 from posixpath import basename
 from tempfile import mkdtemp
 from shutil import rmtree
-from math import isclose
 
 YT_URL = 'https://youtu.be'
 REDDIT_URL = 'https://www.reddit.com'
@@ -175,9 +174,10 @@ def random_image(to_dir: Path) -> tuple:
     print('Filtering posts')
     posts = list(filter(filterer({
         # Try to get images relatively close to 16:9
-        'dimensions': lambda i: 'preview' in i['data'] and isclose(
-            i['data']['preview']['images'][0]['source']['width'] / i['data']['preview']['images'][0]['source']['height'],
-            ASPECT_RATIO, rel_tol=0.04),
+        'dimensions': lambda i: 'preview' in i['data'] and abs(
+            i['data']['preview']['images'][0]['source']['width']
+            / i['data']['preview']['images'][0]['source']['height']
+            - ASPECT_RATIO) <= 0.04,
         'image': lambda i: i['data'].get('post_hint') == 'image',
         'nsfw': lambda i: not i['data'].get('over_18'),
         # Cannot use gifs

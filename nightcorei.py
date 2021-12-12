@@ -23,8 +23,9 @@ YT_URL = 'https://youtu.be'
 REDDIT_URL = 'https://www.reddit.com'
 YT_CATEGORY = 10  # music, not like it even matters
 # Subreddits to pull img from, name appropriate
-M_LADY = ('awwnime', 'Moescape', 'Moescene', 'Animewallpaper', 'streetmoe', 'AnimeART', 'ImaginaryAnime',
-          'AnimeBlush', 'Melanime', 'MoeStash', 'TwoDeeArt', 'Patchuu', 'ImaginarySliceOfLife', 'Pixiv')
+M_LADY = ('awwnime', 'Moescape', 'Moescene', 'Animewallpaper', 'streetmoe', 'AnimeART', 'ImaginaryAnime', 'AnimeBlush',
+          'Melanime', 'MoeStash', 'TwoDeeArt', 'Patchuu', 'ImaginarySliceOfLife', 'Pixiv', 'longhairedwaifus',
+          'AnimeGirlsWithGuns', 'AnimeGirls', 'touchfluffytail', 'OfficialSenpaiHeat', 'yuri_jp', 'ElvenGirls')
 # Don't use videos that are too long (7 minutes)
 MAX_VID_LENGTH = 420
 # Always use this sample rate for audio

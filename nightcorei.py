@@ -314,12 +314,8 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
     print(ffmpeg.stderr.decode('utf-8'))
     print('ffmpeg finished in', time.time() - start_time, 'seconds')
 
-    vid_size = len(ffmpeg.stdout)
-    print('Encoding done, new video is %d bytes' % vid_size)
-    if vid_size > 0:
-        return BytesIO(ffmpeg.stdout)
-    else:
-        raise Exception('Video is blank.')
+    check_results_len(ffmpeg.stdout)
+    return BytesIO(ffmpeg.stdout)
 
 
 def upload_video(video: BytesIO, o_tags: list, title: str, desc: str, youtube: googleapiclient.discovery.Resource):

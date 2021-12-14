@@ -310,10 +310,9 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
     start_time = time.time()
     ffmpeg = subprocess.run(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    print('ffmpeg finished in', time.time() - start_time, 'seconds')
-
     # ffmpeg logs to stderr
     print(ffmpeg.stderr.decode('utf-8'))
+    print('ffmpeg finished in', time.time() - start_time, 'seconds')
 
     vid_size = len(ffmpeg.stdout)
     print('Encoding done, new video is %d bytes' % vid_size)

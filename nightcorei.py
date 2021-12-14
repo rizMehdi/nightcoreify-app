@@ -240,7 +240,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     return v_id, title, tags
 
 @retry
-def download_song(id: str, file_template: str):
+def download_song(s_id: str, file_template: str):
     """Downloads the YouTube song `id` to the file at `file_template` (fstring)."""
 
     dl_opts = {
@@ -259,7 +259,7 @@ def download_song(id: str, file_template: str):
     }
 
     with YoutubeDL(dl_opts) as ytdl:
-        ytdl.download([id])
+        ytdl.download([s_id])
     print('Original song downloaded')
 
 

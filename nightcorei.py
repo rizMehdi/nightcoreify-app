@@ -241,7 +241,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
 
 @retry
 def download_song(s_id: str, file_template: str):
-    """Downloads the YouTube song `id` to the file at `file_template` (fstring)."""
+    """Downloads the YouTube song `s_id` to the file at `file_template` (fstring)."""
 
     dl_opts = {
         # ytdl can encode the downloaded audio at a specific sample rate

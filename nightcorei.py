@@ -30,6 +30,8 @@ M_LADY = ('awwnime', 'Moescape', 'Moescene', 'Animewallpaper', 'streetmoe', 'Ani
 MAX_VID_LENGTH = 420
 # Always use this sample rate for audio
 AUDIO_SAMPLE_RATE = 44100
+# Download the original audio as this
+AUDIO_FILE_FORMAT = 'mp3'
 # Target this aspect ratio for images
 ASPECT_RATIO = 16 / 9
 # Speed up the audio by this much to create the nightcore effect
@@ -117,28 +119,10 @@ def main(event=None, context=None):
     s_id, s_title, s_tags = random_song(youtube)
 
     audio_file_template = str(tmp_dir / '%(id)s.%(ext)s')
-    audio_format = 'mp3'
-    dl_opts = {
-        # ytdl can encode the downloaded audio at a specific sample rate
-        'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
-        'postprocessors': [{
-            # also, it can create an audio file in whatever format on its own
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': audio_format,
-        }],
-        'audioformat': audio_format,
-        'outtmpl': audio_file_template,
-        'noplaylist': True,  # sanity
-        'nooverwrites': False,  # sanity
-        'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
-    }
-
-    with YoutubeDL(dl_opts) as ytdl:
-        ytdl.download([s_id])
-    print('Original song downloaded')
+    download_song(s_id, audio_file_template)
 
     video = create_video(Path(audio_file_template % {
-        'id': s_id, 'ext': audio_format}), img_path, img_dimensions)
+        'id': s_id, 'ext': AUDIO_FILE_FORMAT}), img_path, img_dimensions)
 
     # For testing
     """with open(tmp_dir / 'out.ts', 'wb') as v:
@@ -254,6 +238,29 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
         tags = list()
 
     return v_id, title, tags
+
+@retry
+def download_song(id: str, file_template: str):
+    """Downloads the YouTube song `id` to the file at `file_template` (fstring)."""
+
+    dl_opts = {
+        # ytdl can encode the downloaded audio at a specific sample rate
+        'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
+        'postprocessors': [{
+            # also, it can create an audio file in whatever format on its own
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': AUDIO_FILE_FORMAT,
+        }],
+        'audioformat': AUDIO_FILE_FORMAT,
+        'outtmpl': file_template,
+        'noplaylist': True,  # sanity
+        'nooverwrites': False,  # sanity
+        'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
+    }
+
+    with YoutubeDL(dl_opts) as ytdl:
+        ytdl.download([id])
+    print('Original song downloaded')
 
 
 def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> BytesIO:

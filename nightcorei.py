@@ -105,7 +105,7 @@ def check_results_len(results):
     length is 0."""
 
     res_len = len(results)
-    print('New size:', res_len)
+    print('Size:', res_len)
     if res_len < 1:
         raise EmptyError
 

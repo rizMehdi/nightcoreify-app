@@ -14,7 +14,9 @@ I currently have this script running in an [AWS Lambda](https://aws.amazon.com/l
 
 ### Clarification on "random" YouTube videos
 
-There's no easy way to find a totally random video on YouTube, much less one belonging to a certain category (music in my case), at least that I can find. So what the script does is generate a 4-character string, add `v=` to the beginning, add `-nightcore` to the end so it doesn't nightcore any pre-existing nightcore, and search for it in the music category. This returns a bunch of videos with that 4-character string in the name, or with that string at the beginning of their ID (hence the `v=`). Definitely not random, but this is the best method I can think of with what I have.
+There's no easy way to find a totally random video on YouTube, much less one belonging to a certain category (music in my case), at least that I can find. So what the script does is generate a 4-character string, add `v=` to the beginning, and search for it in the music category. This returns a bunch of videos with that 4-character string in the name, or with that string at the beginning of their ID (hence the `v=`). Definitely not random, but this is the best method I can think of with what I have.
+
+The YouTube query used to end with `-nightcore` so the bot wouldn't nightcore any existing nightcore, but I decided it would be pretty funny if it ever happened to do that.
 
 ## Requirements
 - Python 3.8

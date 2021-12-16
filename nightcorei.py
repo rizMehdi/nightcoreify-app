@@ -210,9 +210,8 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
 
     # From what I've found, "v=XXXX" will return videos whose ID matches XXXX, or a whose title closely matches
     # that string, but the former is more common. Basically, we are at the mercy of the YouTube algorithm.
-    # "-nightcore" makes sure we don't find any existing nightcore.
     # The random "ID" is the first 4 characters of a UUID4. Any more than 4 characters tends to return less videos.
-    q = 'v=%s -nightcore' % str(uuid4())[:4]
+    q = 'v=%s' % str(uuid4())[:4]
     print('Search for', q)
     req_vid = youtube.search().list(
         part='snippet',

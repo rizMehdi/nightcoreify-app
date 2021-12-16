@@ -153,7 +153,7 @@ def main(event=None, context=None):
     rmtree(tmp_dir, ignore_errors=True)
 
 
-@retry(EmptyError, RedditAPIError, KeyError, urllib.error.URLError)
+@retry((EmptyError, RedditAPIError, KeyError, urllib.error.URLError))
 def random_image(to_dir: Path) -> tuple:
     """Finds and downloads a random image, and saves it to the directory `to_dir` (`Path`). Returns a 3-tuple (`Path` to
     saved image, permalink, (width, height))."""
@@ -204,7 +204,7 @@ def random_image(to_dir: Path) -> tuple:
     return pic_path, permalink, dimensions
 
 
-@retry(EmptyError, KeyError, googleapiclient.errors.Error)
+@retry((EmptyError, KeyError, googleapiclient.errors.Error))
 def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     """Finds a random song on `youtube`. Returns a 3-tuple (id, title, tags)."""
 

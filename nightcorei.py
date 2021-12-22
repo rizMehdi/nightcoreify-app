@@ -333,19 +333,14 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
 
 
 @retry(googleapiclient.errors.Error)
-def upload_video(video: BytesIO, o_tags: list, title: str, desc: str, youtube: googleapiclient.discovery.Resource):
+def upload_video(video: BytesIO, tags: list, title: str, desc: str, youtube: googleapiclient.discovery.Resource):
     """Uploads the video, returns response from `youtube` service."""
-
-    title = title.strip()
-    
-    if len(o_tags) > 0:
-        tags = create_tags(o_tags)
 
     body = {
         'snippet': {
-            'title': truncate('Nightcore - ' + title, 100),
+            'title': truncate('Nightcore - ' + title.strip(), 100),
             'description': desc,
-            'tags': tags,
+            'tags': create_tags(tags),
             'categoryId': YT_CATEGORY
         },
         'status': {
@@ -365,22 +360,23 @@ def create_tags(tags: list) -> list:
     """Prepares tags for a new upload. Keeps as many old tags as possible while adding a "nightcore" tag."""
 
     to_add = 'nightcore'
-    # The total number of characters in YouTube video tags can't exceed 400.
-    # We're adding the "nightcore" tag, so we'll only keep this many characters of the original tags.
-    target_len = 400 - len(to_add)
-
     new_tags = []
-    length = 0
-    # Keep tags up until they can no longer fit within our target.
-    for tag in tags:
-        length += len(tag)
-        if length < target_len:
-            new_tags.append(tag)
-        else:
-            break
+
+    if len(tags) > 0:
+        # The total number of characters in YouTube video tags can't exceed 400.
+        # We're adding the "nightcore" tag, so we'll only keep this many characters of the original tags.
+        target_len = 400 - len(to_add)
+
+        length = 0
+        # Keep tags up until they can no longer fit within our target.
+        for tag in tags:
+            length += len(tag)
+            if length < target_len:
+                new_tags.append(tag)
+            else:
+                break
 
     new_tags.append(to_add)
-
     return new_tags
 
 

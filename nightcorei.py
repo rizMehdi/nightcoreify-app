@@ -176,7 +176,7 @@ def random_image(to_dir: Path) -> tuple:
         'dimensions': lambda i: 'preview' in i['data'] and abs(
             i['data']['preview']['images'][0]['source']['width']
             / i['data']['preview']['images'][0]['source']['height']
-            - ASPECT_RATIO) <= 0.04,
+            - ASPECT_RATIO) <= 0.4,
         'image': lambda i: i['data'].get('post_hint') == 'image',
         'nsfw': lambda i: not i['data'].get('over_18'),
         # Cannot use gifs

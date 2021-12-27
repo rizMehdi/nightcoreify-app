@@ -85,8 +85,8 @@ def main(event=None, context=None):
     download_song(s_id, audio_file_template)
 
     # Create the new video
-    video = create_video(Path(audio_file_template % {
-        'id': s_id, 'ext': AUDIO_FILE_FORMAT}), img_path, img_dimensions)
+    video = create_video(audio_file_template % {
+        'id': s_id, 'ext': AUDIO_FILE_FORMAT}, str(img_path), img_dimensions)
 
     # Upload the new video to YouTube
     upload_video(video, s_tags, s_title, YT_DESC % {
@@ -278,7 +278,7 @@ def download_song(s_id: str, file_template: str):
 
 
 # This function will not be retried (even though it can throw EmptyError) as it's the most computationally expensive.
-def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> BytesIO:
+def create_video(audio_path: str, img_path: str, img_dimensions: tuple) -> BytesIO:
     """Creates a new nightcore video from the unprocessed audio file at `audio_file` and the image file at `img_path`.
     `img_dimensions` must be a 2-tuple (width, height). Returns the new video."""
 
@@ -291,8 +291,8 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
         # Loop the...
         '-loop', '1',
         # ...image...
-        '-i', str(img_path),
-        '-i', str(audio_file),
+        '-i', img_path,
+        '-i', audio_path,
         # ...until the shortest stream (i.e., the audio) ends
         '-shortest',
         '-filter_complex',

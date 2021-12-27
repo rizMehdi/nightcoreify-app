@@ -173,12 +173,12 @@ def random_image(to_dir: Path) -> tuple:
     logging.info('Got %i posts', check_results_len(data['data']['children']))
 
     posts = list(filter(filterer({
+        'image': lambda i: i['data'].get('post_hint') == 'image' and 'url' in i['data'],
         # Try to get images relatively close to 16:9
         'dimensions': lambda i: 'preview' in i['data'] and abs(
             i['data']['preview']['images'][0]['source']['width']
             / i['data']['preview']['images'][0]['source']['height']
             - ASPECT_RATIO) <= 0.4,
-        'image': lambda i: i['data'].get('post_hint') == 'image' and 'url' in i['data'],
         'nsfw': lambda i: not i['data'].get('over_18'),
         # Cannot use gifs
         'gif': lambda i: '.gif' not in i['data']['url'].lower()

@@ -63,7 +63,7 @@ class RedditAPIError(Exception):
 def main(event=None, context=None):
     """The function that does the things."""
 
-    logging.basicConfig(format='[%(funcName)s] %(levelname)s\t%(message)s', level=logging.DEBUG, force=True)
+    logging.basicConfig(format='[%(funcName)s] %(message)s', level=logging.DEBUG, force=True)
 
     # For local testing only
     if event is None and context is None:

@@ -326,7 +326,7 @@ def create_video(audio_path: str, img_path: str, img_dimensions: tuple) -> Bytes
     ffmpeg = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # ffmpeg logs to stderr
-    logging.debug(ffmpeg.stderr.decode('utf-8'))
+    logging.debug(ffmpeg.stderr.decode('utf-8').replace('\n', '\n!!!!! '))
     logging.info('ffmpeg finished in %i seconds, video size is %i bytes', time.time() - start_time, check_results_len(ffmpeg.stdout))
 
     return BytesIO(ffmpeg.stdout)

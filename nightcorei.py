@@ -19,6 +19,7 @@ from posixpath import basename
 from tempfile import mkdtemp
 from shutil import rmtree
 
+
 YT_URL = 'https://youtu.be'
 REDDIT_URL = 'https://www.reddit.com'
 YT_CATEGORY = 10  # music, not like it even matters
@@ -57,6 +58,45 @@ class EmptyError(Exception):
 class RedditAPIError(Exception):
     """Reddit API returned an error."""
     ...
+
+
+def main(event=None, context=None):
+    """The function that does the things."""
+
+    logging.basicConfig(format='[%(funcName)s] %(levelname)s\t%(message)s', level=logging.DEBUG)
+
+    # For local testing only
+    if event is None and context is None:
+        from dotenv import load_dotenv
+        load_dotenv()
+
+    # A temporary directory where we'll store the original song and image.
+    tmp_dir = Path(mkdtemp(prefix='nightcoreify'))
+
+    # Find random image
+    img_path, img_perma, img_dimensions = random_image(tmp_dir)
+
+    # Construct YT API client and find random song
+    youtube = yt_factory()
+    s_id, s_title, s_tags = random_song(youtube)
+
+    # Download the song, name according to the template
+    audio_file_template = str(tmp_dir / '%(id)s.%(ext)s')
+    download_song(s_id, audio_file_template)
+
+    # Create the new video
+    video = create_video(Path(audio_file_template % {
+        'id': s_id, 'ext': AUDIO_FILE_FORMAT}), img_path, img_dimensions)
+
+    # Upload the new video to YouTube
+    upload_video(video, s_tags, s_title, YT_DESC % {
+        'vid_url': urllib.parse.urljoin(YT_URL, s_id), 'img_url': img_perma}, youtube)
+    del video
+
+    # Lambda has 512 MB of temp storage, which is not guaranteed to persist.
+    # But if it does persist for some reason, it shouldn't be cluttered.
+    rmtree(tmp_dir, ignore_errors=True)
+    logging.shutdown()
 
 
 def retry(exc):
@@ -109,54 +149,13 @@ def check_results_len(results):
     return res_len
 
 
-def main(event=None, context=None):
-    """The function that does the things."""
-
-    logging.basicConfig(format='[%(funcName)s] %(levelname)s\t%(message)s', level=logging.DEBUG)
-
-    if event is None and context is None:
-        # For local testing only
-        from dotenv import load_dotenv
-        load_dotenv()
-
-    # A temporary directory where we'll store the original song and image.
-    tmp_dir = Path(mkdtemp(prefix='nightcoreify'))
-
-    # Find random image
-    img_path, img_perma, img_dimensions = random_image(tmp_dir)
-
-    youtube = yt_factory()
-    # Find random song
-    s_id, s_title, s_tags = random_song(youtube)
-
-    audio_file_template = str(tmp_dir / '%(id)s.%(ext)s')
-    download_song(s_id, audio_file_template)
-
-    video = create_video(Path(audio_file_template % {
-        'id': s_id, 'ext': AUDIO_FILE_FORMAT}), img_path, img_dimensions)
-
-    # For testing
-    """with open(tmp_dir / 'out.ts', 'wb') as v:
-        v.write(video.getvalue())"""
-
-    res = upload_video(video, s_tags, s_title, YT_DESC % {
-        'vid_url': urllib.parse.urljoin(YT_URL, s_id), 'img_url': img_perma}, youtube)
-    del video
-    logging.info('Response from YouTube: %s', json.dumps(res, indent=None))
-
-    # Lambda has 512 MB of temp storage, which is not guaranteed to persist.
-    # But if it does persist for some reason, it shouldn't be cluttered.
-    rmtree(tmp_dir, ignore_errors=True)
-    logging.shutdown()
-
-
 def yt_factory() -> googleapiclient.discovery.Resource:
     """Constructs a YouTube API client."""
 
-    logging.info('Attempting YouTube authentication')
-    # Create a YouTube API client
+    logging.debug('Creating YouTube API client')
     return googleapiclient.discovery.build(
         'youtube', 'v3', credentials=Credentials(None, **json.loads(getenv('YT_TOKEN'))), cache_discovery=False)
+
 
 @retry((EmptyError, RedditAPIError, KeyError, urllib.error.URLError))
 def random_image(to_dir: Path) -> tuple:
@@ -164,8 +163,7 @@ def random_image(to_dir: Path) -> tuple:
     saved image, permalink, (width, height))."""
 
     # Get json of 100 newest posts of random subreddit
-    reddit_json_url = urllib.parse.urljoin(REDDIT_URL, 'r/%s/new.json?limit=100' %
-                                    (choice(M_LADY)))
+    reddit_json_url = urllib.parse.urljoin(REDDIT_URL, 'r/%s/new.json?limit=100' % (choice(M_LADY)))
     logging.info('Reddit, do your thing!!1! Load %s', reddit_json_url)
     with urllib.request.urlopen(urllib.request.Request(reddit_json_url, headers=REQ_HEADERS)) as res:
         data = json.load(res)
@@ -181,10 +179,10 @@ def random_image(to_dir: Path) -> tuple:
             i['data']['preview']['images'][0]['source']['width']
             / i['data']['preview']['images'][0]['source']['height']
             - ASPECT_RATIO) <= 0.4,
-        'image': lambda i: i['data'].get('post_hint') == 'image',
+        'image': lambda i: i['data'].get('post_hint') == 'image' and 'url' in i['data'],
         'nsfw': lambda i: not i['data'].get('over_18'),
         # Cannot use gifs
-        'gif': lambda i: '.gif' not in i['data'].get('url').lower()
+        'gif': lambda i: '.gif' not in i['data']['url'].lower()
     }, lambda i: i['data'].get('permalink')), data['data']['children']))
 
     logging.info('After filtering, %i posts remain', check_results_len(posts))
@@ -200,7 +198,7 @@ def random_image(to_dir: Path) -> tuple:
                   my_pic['data']['preview']['images'][0]['source']['height'])
 
     logging.info('Selected image %s', permalink)
-    logging.info('Download %s', pic_url)
+    logging.debug('Download %s', pic_url)
 
     with urllib.request.urlopen(urllib.request.Request(pic_url, headers=REQ_HEADERS)) as res, open(pic_path, 'wb') as file:
         file.write(res.read())
@@ -216,7 +214,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     # that string, but the former is more common. Basically, we are at the mercy of the YouTube algorithm.
     # The random "ID" is the first 4 characters of a UUID4. Any more than 4 characters tends to return less videos.
     q = 'v=%s' % str(uuid4())[:4]
-    logging.info('Search for %s', q)
+    logging.info('Search YouTube for "%s"', q)
     req_vid = youtube.search().list(
         part='snippet',
         maxResults=50,
@@ -232,6 +230,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
         part='snippet,contentDetails',
         id=','.join(vid['id']['videoId'] for vid in res_vid['items'])
     )
+    logging.debug('Get tags & duration')
     res_det = req_det.execute()
 
     items_det = list(filter(filterer({
@@ -254,6 +253,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
 
     return v_id, title, tags
 
+
 @retry(youtube_dl.DownloadError)
 def download_song(s_id: str, file_template: str):
     """Downloads the YouTube song `s_id` to the file at `file_template` (fstring)."""
@@ -273,9 +273,9 @@ def download_song(s_id: str, file_template: str):
         'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
     }
 
+    logging.debug('Downloading original song')
     with youtube_dl.YoutubeDL(dl_opts) as ytdl:
         ytdl.download([s_id])
-    logging.info('Original song downloaded')
 
 
 # This function will not be retried (even though it can throw EmptyError) as it's the most computationally expensive.
@@ -324,13 +324,12 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
     # Log the ffmpeg command for debugging
     logging.debug('ffmpeg command: %s', ' '.join(cmd))
     start_time = time.time()
-    ffmpeg = subprocess.run(cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+    ffmpeg = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
     # ffmpeg logs to stderr
     logging.debug(ffmpeg.stderr.decode('utf-8'))
-    logging.info('ffmpeg finished in', time.time() - start_time, 'seconds')
+    logging.info('ffmpeg finished in %i seconds, video size is %i bytes', time.time() - start_time, check_results_len(ffmpeg.stdout))
 
-    logging.info('Video size is %i bytes', check_results_len(ffmpeg.stdout))
     return BytesIO(ffmpeg.stdout)
 
 
@@ -349,13 +348,15 @@ def upload_video(video: BytesIO, tags: list, title: str, desc: str, youtube: goo
             'privacyStatus': 'public'
         }
     }
+
+    logging.info('Uploading video to YouTube')
     req = youtube.videos().insert(
         part=','.join(body.keys()) + ',id',
         body=body,
         media_body=MediaIoBaseUpload(
             video, VIDEO_MIME, chunksize=1024 * 1024, resumable=True),
     )
-    return req.execute()
+    logging.debug('Response from YouTube: %s', json.dumps(req.execute(), indent=None))
 
 
 def create_tags(tags: list) -> list:
@@ -379,6 +380,8 @@ def create_tags(tags: list) -> list:
                 break
 
     new_tags.append(to_add)
+
+    logging.debug('Tags: %s', new_tags)
     return new_tags
 
 

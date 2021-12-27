@@ -1,6 +1,6 @@
 import json
 import subprocess
-import traceback
+import logging
 import time
 import urllib
 import youtube_dl
@@ -65,7 +65,7 @@ def retry(exc):
 
     def outer(func):
 
-        def inner(*args, **kwargs):
+        def retry_wrapper(*args, **kwargs):
             timeout = 3
             runs = 3
             for n in range(runs):
@@ -73,15 +73,14 @@ def retry(exc):
                     return func(*args, **kwargs)
                 except exc as e:
                     if n < runs - 1:
-                        traceback.print_exc()
-                        print('Retrying in %d seconds...' % timeout)
+                        logging.exception('Retrying in %d seconds...', timeout)
                         time.sleep(timeout)
                         timeout *= 2
                     else:
-                        print('Giving up.')
+                        logging.error('Giving up.')
                         raise e
 
-        return inner
+        return retry_wrapper
     
     return outer
 
@@ -90,40 +89,43 @@ def filterer(conditions: dict, id_getter):
     """Returns a method that verbosely filters items based on `conditions`.
     `id_getter` should return the id of the item passed to it."""
 
-    def inner(item):
+    def filter_cb(item):
         for reason, condition in zip(conditions, conditions.values()):
             if not condition(item):
-                print(id_getter(item), 'is filtered because of', reason)
+                logging.info('{} is filtered because of {}'.format(id_getter(item), reason))
                 return False
         return True
 
-    return inner
+    return filter_cb
 
 
 def check_results_len(results):
-    """Prints the length of `results` and throws an exception if that
-    length is 0."""
+    """Returns the length of `results` and throws `EmptyError` if
+    `results` is empty."""
 
     res_len = len(results)
-    print('Size:', res_len)
     if res_len < 1:
         raise EmptyError
+    return res_len
 
 
 def main(event=None, context=None):
     """The function that does the things."""
 
+    logging.basicConfig(format='[%(funcName)s] %(levelname)s\t%(message)s', level=logging.DEBUG)
+
     if event is None and context is None:
         # For local testing only
         from dotenv import load_dotenv
         load_dotenv()
+
     # The YT credentials will be stored in JSON format in an environment variable.
     credentials = json.loads(getenv('YT_TOKEN'))
 
     # A temporary directory where we'll store the original song and image.
     tmp_dir = Path(mkdtemp(prefix='nightcoreify'))
 
-    print('Attempting YouTube authentication')
+    logging.info('Attempting YouTube authentication')
     # Create a YouTube API client
     youtube = googleapiclient.discovery.build(
         'youtube', 'v3', credentials=Credentials(None, **credentials), cache_discovery=False)
@@ -145,12 +147,12 @@ def main(event=None, context=None):
     res = upload_video(video, s_tags, s_title, YT_DESC % {
         'vid_url': urllib.parse.urljoin(YT_URL, s_id), 'img_url': img_perma}, youtube)
     del video
-    print('Response from YouTube:', json.dumps(res, indent=None))
+    logging.info('Response from YouTube: %s', json.dumps(res, indent=None))
 
-    print('Cleaning up')
     # Lambda has 512 MB of temp storage, which is not guaranteed to persist.
     # But if it does persist for some reason, it shouldn't be cluttered.
     rmtree(tmp_dir, ignore_errors=True)
+    logging.shutdown()
 
 
 @retry((EmptyError, RedditAPIError, KeyError, urllib.error.URLError))
@@ -161,16 +163,15 @@ def random_image(to_dir: Path) -> tuple:
     # Get json of 100 newest posts of random subreddit
     reddit_json_url = urllib.parse.urljoin(REDDIT_URL, 'r/%s/new.json?limit=100' %
                                     (choice(M_LADY)))
-    print('Reddit, do your thing!!1! Load', reddit_json_url)
+    logging.info('Reddit, do your thing!!1! Load %s', reddit_json_url)
     with urllib.request.urlopen(urllib.request.Request(reddit_json_url, headers=REQ_HEADERS)) as res:
         data = json.load(res)
 
     if data.get('error') is not None:
         raise RedditAPIError(data['error'])
 
-    check_results_len(data['data']['children'])
+    logging.info('Got %i posts', check_results_len(data['data']['children']))
 
-    print('Filtering posts')
     posts = list(filter(filterer({
         # Try to get images relatively close to 16:9
         'dimensions': lambda i: 'preview' in i['data'] and abs(
@@ -183,7 +184,7 @@ def random_image(to_dir: Path) -> tuple:
         'gif': lambda i: '.gif' not in i['data'].get('url').lower()
     }, lambda i: i['data'].get('permalink')), data['data']['children']))
 
-    check_results_len(posts)
+    logging.info('After filtering, %i posts remain', check_results_len(posts))
 
     my_pic = choice(posts)
     permalink = urllib.parse.urljoin(REDDIT_URL, my_pic['data']['permalink'])
@@ -195,8 +196,8 @@ def random_image(to_dir: Path) -> tuple:
     dimensions = (my_pic['data']['preview']['images'][0]['source']['width'],
                   my_pic['data']['preview']['images'][0]['source']['height'])
 
-    print('Selected image', permalink)
-    print('Load', pic_url)
+    logging.info('Selected image %s', permalink)
+    logging.info('Download %s', pic_url)
 
     with urllib.request.urlopen(urllib.request.Request(pic_url, headers=REQ_HEADERS)) as res, open(pic_path, 'wb') as file:
         file.write(res.read())
@@ -212,7 +213,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     # that string, but the former is more common. Basically, we are at the mercy of the YouTube algorithm.
     # The random "ID" is the first 4 characters of a UUID4. Any more than 4 characters tends to return less videos.
     q = 'v=%s' % str(uuid4())[:4]
-    print('Search for', q)
+    logging.info('Search for %s', q)
     req_vid = youtube.search().list(
         part='snippet',
         maxResults=50,
@@ -221,7 +222,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
         videoCategoryId=YT_CATEGORY
     )
     res_vid = req_vid.execute()
-    check_results_len(res_vid['items'])
+    logging.info('Initial query returned %i results', check_results_len(res_vid['items']))
 
     req_det = youtube.videos().list(
         # gets tags and duration of the videos returned by previous search
@@ -230,17 +231,15 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     )
     res_det = req_det.execute()
 
-    print('Filtering videos')
     items_det = list(filter(filterer({
         'duration': lambda i: parse_isoduration(i['contentDetails'].get('duration')) <= MAX_VID_LENGTH
     }, lambda i: i.get('id')), res_det['items']))
 
-    check_results_len(items_det)
+    logging.info('After filtering, %i results remain', check_results_len(items_det))
 
     my_choice = choice(items_det)
     v_id = my_choice['id']
-    print(v_id, 'it is!')
-    print('Duration is', my_choice['contentDetails'].get('duration'))
+    logging.info('Selected video %s, duration is %s', v_id, my_choice['contentDetails'].get('duration'))
 
     # YouTube API returns titles with HTML escape characters
     title = unescape(my_choice['snippet']['title'])
@@ -273,7 +272,7 @@ def download_song(s_id: str, file_template: str):
 
     with youtube_dl.YoutubeDL(dl_opts) as ytdl:
         ytdl.download([s_id])
-    print('Original song downloaded')
+    logging.info('Original song downloaded')
 
 
 # This function will not be retried (even though it can throw EmptyError) as it's the most computationally expensive.
@@ -320,15 +319,15 @@ def create_video(audio_file: Path, img_path: Path, img_dimensions: tuple) -> Byt
     ]
 
     # Log the ffmpeg command for debugging
-    print('ffmpeg command:', ' '.join(cmd))
+    logging.debug('ffmpeg command: %s', ' '.join(cmd))
     start_time = time.time()
     ffmpeg = subprocess.run(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     # ffmpeg logs to stderr
-    print(ffmpeg.stderr.decode('utf-8'))
-    print('ffmpeg finished in', time.time() - start_time, 'seconds')
+    logging.debug(ffmpeg.stderr.decode('utf-8'))
+    logging.info('ffmpeg finished in', time.time() - start_time, 'seconds')
 
-    check_results_len(ffmpeg.stdout)
+    logging.info('Video size is %i bytes', check_results_len(ffmpeg.stdout))
     return BytesIO(ffmpeg.stdout)
 
 

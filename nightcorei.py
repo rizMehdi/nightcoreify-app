@@ -63,7 +63,7 @@ class RedditAPIError(Exception):
 def main(event=None, context=None):
     """The function that does the things."""
 
-    logging.basicConfig(format='[%(funcName)s] %(levelname)s\t%(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='[%(funcName)s] %(levelname)s\t%(message)s', level=logging.DEBUG, force=True)
 
     # For local testing only
     if event is None and context is None:
@@ -96,7 +96,6 @@ def main(event=None, context=None):
     # Lambda has 512 MB of temp storage, which is not guaranteed to persist.
     # But if it does persist for some reason, it shouldn't be cluttered.
     rmtree(tmp_dir, ignore_errors=True)
-    logging.shutdown()
 
 
 def retry(exc):

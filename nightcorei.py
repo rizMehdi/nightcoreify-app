@@ -119,19 +119,14 @@ def main(event=None, context=None):
         from dotenv import load_dotenv
         load_dotenv()
 
-    # The YT credentials will be stored in JSON format in an environment variable.
-    credentials = json.loads(getenv('YT_TOKEN'))
-
     # A temporary directory where we'll store the original song and image.
     tmp_dir = Path(mkdtemp(prefix='nightcoreify'))
 
-    logging.info('Attempting YouTube authentication')
-    # Create a YouTube API client
-    youtube = googleapiclient.discovery.build(
-        'youtube', 'v3', credentials=Credentials(None, **credentials), cache_discovery=False)
-
-    # Get the random image and song
+    # Find random image
     img_path, img_perma, img_dimensions = random_image(tmp_dir)
+
+    youtube = yt_factory()
+    # Find random song
     s_id, s_title, s_tags = random_song(youtube)
 
     audio_file_template = str(tmp_dir / '%(id)s.%(ext)s')
@@ -154,6 +149,14 @@ def main(event=None, context=None):
     rmtree(tmp_dir, ignore_errors=True)
     logging.shutdown()
 
+
+def yt_factory() -> googleapiclient.discovery.Resource:
+    """Constructs a YouTube API client."""
+
+    logging.info('Attempting YouTube authentication')
+    # Create a YouTube API client
+    return googleapiclient.discovery.build(
+        'youtube', 'v3', credentials=Credentials(None, **json.loads(getenv('YT_TOKEN'))), cache_discovery=False)
 
 @retry((EmptyError, RedditAPIError, KeyError, urllib.error.URLError))
 def random_image(to_dir: Path) -> tuple:

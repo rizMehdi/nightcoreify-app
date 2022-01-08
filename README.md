@@ -1,6 +1,6 @@
 # nightcoreify
 
-![This is what most nightcore "artists" look like.](https://i.imgur.com/NeDxKfV.png)
+![A nightcore artist at work.](https://user-images.githubusercontent.com/45053302/148656767-bc27b733-a96b-437a-9469-739093be4b4a.png)
 
 [Nightcore](https://en.wikipedia.org/wiki/Nightcore) is mind-numbingly simple. It's just a speed-shift of a pre-existing track, with anime artwork and a visualizer slapped on top. The harsh reality is, we are wasting human minds on the creation of such low-effort "music."
 

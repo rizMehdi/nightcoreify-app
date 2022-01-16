@@ -384,19 +384,20 @@ def create_tags(tags: list) -> list:
     return new_tags
 
 
+def get_isosplit(t, split):
+        if split in t:
+            n, t = t.split(split)
+        else:
+            n = 0
+        return n, t
+
+
 def parse_isoduration(s: str) -> int:
     """Converts ISO 8601 duration to seconds."""
     # Borrowed code from https://stackoverflow.com/a/64232786
 
     # Remove prefix
     s = s.split('P')[-1]
-
-    def get_isosplit(t, split):
-        if split in t:
-            n, t = t.split(split)
-        else:
-            n = 0
-        return n, t
 
     # Step through letter dividers
     days, s = get_isosplit(s, 'D')

@@ -28,4 +28,4 @@ Side note: if you dig through the commits in this repo, you'll find that this us
 
 ## License
 
-This software is released under a BSD Zero Clause License, mostly because I want you to be able to rip off my FFmpeg command. FFmpeg is cool, but it's really annoying to get it to work the way you want it to. Hopefully the hours of hair-pulling that went into writing that command can be useful to someone else as well.
+This software is released under a MIT License.

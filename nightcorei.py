@@ -23,8 +23,8 @@ from shutil import rmtree
 YT_URL = 'https://youtu.be'
 REDDIT_URL = 'https://www.reddit.com'
 YT_CATEGORY = 10  # music, not like it even matters
-# Subreddits to pull img from, name appropriate
-M_LADY = ('awwnime', 'Moescape', 'Moescene', 'Animewallpaper', 'streetmoe', 'AnimeART', 'ImaginaryAnime', 'AnimeBlush',
+# Subreddits to pull img from
+SUBREDDITS = ('awwnime', 'Moescape', 'Moescene', 'Animewallpaper', 'streetmoe', 'AnimeART', 'ImaginaryAnime', 'AnimeBlush',
           'Melanime', 'MoeStash', 'TwoDeeArt', 'Patchuu', 'ImaginarySliceOfLife', 'Pixiv', 'longhairedwaifus',
           'AnimeGirlsWithGuns', 'AnimeGirls', 'touchfluffytail', 'OfficialSenpaiHeat', 'ElvenGirls')
 # Don't use videos that are too long (7 minutes)
@@ -162,7 +162,7 @@ def random_image(to_dir: Path) -> tuple:
     saved image, permalink, (width, height))."""
 
     # Get json of 100 newest posts of random subreddit
-    reddit_json_url = urllib.parse.urljoin(REDDIT_URL, 'r/%s/new.json?limit=100' % (choice(M_LADY)))
+    reddit_json_url = urllib.parse.urljoin(REDDIT_URL, 'r/%s/new.json?limit=100' % (choice(SUBREDDITS)))
     logging.info('Reddit, do your thing!!1! Load %s', reddit_json_url)
     with urllib.request.urlopen(urllib.request.Request(reddit_json_url, headers=REQ_HEADERS)) as res:
         data = json.load(res)

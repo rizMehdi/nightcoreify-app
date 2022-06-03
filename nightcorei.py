@@ -154,7 +154,10 @@ def yt_factory() -> googleapiclient.discovery.Resource:
     logging.debug('Creating YouTube API client')
     return googleapiclient.discovery.build(
         'youtube', 'v3',
-        credentials=Credentials.from_service_account_info(json.loads(getenv('GCP_SERVICE_USER'))),
+        # The GCP_SERVICE_ACCOUNT environment variable contains the JSON data for the
+        # service account, downloaded from the Google Cloud Platform console upon creating
+        # the account.
+        credentials=Credentials.from_service_account_info(json.loads(getenv('GCP_SERVICE_ACCOUNT'))),
         cache_discovery=False)
 
 

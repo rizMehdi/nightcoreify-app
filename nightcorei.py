@@ -6,7 +6,7 @@ import urllib
 import youtube_dl
 import googleapiclient.discovery
 import googleapiclient.errors
-from google.oauth2.credentials import Credentials
+from google.oauth2.service_account import Credentials
 from googleapiclient.http import MediaIoBaseUpload
 from io import BytesIO
 from datetime import timedelta
@@ -153,7 +153,9 @@ def yt_factory() -> googleapiclient.discovery.Resource:
 
     logging.debug('Creating YouTube API client')
     return googleapiclient.discovery.build(
-        'youtube', 'v3', credentials=Credentials(None, **json.loads(getenv('YT_TOKEN'))), cache_discovery=False)
+        'youtube', 'v3',
+        credentials=Credentials.from_service_account_info(json.loads(getenv('GCP_SERVICE_USER'))),
+        cache_discovery=False)
 
 
 @retry(EmptyError, RedditAPIError, KeyError, urllib.error.URLError)

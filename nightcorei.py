@@ -107,22 +107,21 @@ def retry(*exc):
         def retry_wrapper(*args, **kwargs):
             timeout = 3
             runs = 3
-            for n in range(runs):
+            for n in range(1, runs + 1):
                 try:
                     return func(*args, **kwargs)
                 except exc as e:
-                    if n < runs - 1:
-                        logging.exception('Retrying in %d seconds...', timeout)
-                        time.sleep(timeout)
-                        timeout *= 2
-                    else:
+                    if n == runs:
                         logging.error('Giving up.')
                         raise e
+                    else:
+                        logging.exception('Attempt %d failed, retrying in %d seconds...', n, timeout)
+                        time.sleep(timeout)
+                        timeout *= 2
 
         return retry_wrapper
     
     return outer
-
 
 def filterer(conditions: dict, id_getter):
     """Returns a method that verbosely filters items based on `conditions`.

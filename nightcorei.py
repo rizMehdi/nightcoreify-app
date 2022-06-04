@@ -73,29 +73,31 @@ def main(event=None, context=None):
     # A temporary directory where we'll store the original song and image.
     tmp_dir = Path(mkdtemp(prefix='nightcoreify'))
 
-    # Find random image
-    img_path, img_perma, img_dimensions = random_image(tmp_dir)
+    try:
+        # Find random image
+        img_path, img_perma, img_dimensions = random_image(tmp_dir)
 
-    # Construct YT API client and find random song
-    youtube = yt_factory()
-    s_id, s_title, s_tags = random_song(youtube)
+        # Construct YT API client and find random song
+        youtube = yt_factory()
+        s_id, s_title, s_tags = random_song(youtube)
 
-    # Download the song, name according to the template
-    audio_file_template = str(tmp_dir / '%(id)s.%(ext)s')
-    download_song(s_id, audio_file_template)
+        # Download the song, name according to the template
+        audio_file_template = str(tmp_dir / '%(id)s.%(ext)s')
+        download_song(s_id, audio_file_template)
 
-    # Create the new video
-    video = create_video(audio_file_template % {
-        'id': s_id, 'ext': AUDIO_FILE_FORMAT}, str(img_path), img_dimensions)
+        # Create the new video
+        video = create_video(audio_file_template % {
+            'id': s_id, 'ext': AUDIO_FILE_FORMAT}, str(img_path), img_dimensions)
 
-    # Upload the new video to YouTube
-    upload_video(video, s_tags, s_title, YT_DESC % {
-        'vid_url': urllib.parse.urljoin(YT_URL, s_id), 'img_url': img_perma}, youtube)
-    del video
+        # Upload the new video to YouTube
+        upload_video(video, s_tags, s_title, YT_DESC % {
+            'vid_url': urllib.parse.urljoin(YT_URL, s_id), 'img_url': img_perma}, youtube)
+        del video
 
-    # Lambda has 512 MB of temp storage, which is not guaranteed to persist.
-    # But if it does persist for some reason, it shouldn't be cluttered.
-    rmtree(tmp_dir, ignore_errors=True)
+    finally:
+        # Lambda has 512 MB of temp storage, which is not guaranteed to persist.
+        # But if it does persist for some reason, it shouldn't be cluttered.
+        rmtree(tmp_dir, ignore_errors=True)
 
 
 def retry(*exc):

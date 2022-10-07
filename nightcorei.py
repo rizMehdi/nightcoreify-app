@@ -234,7 +234,8 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     res_det = req_det.execute()
 
     items_det = list(filter(filterer({
-        'duration': lambda i: parse_isoduration(i['contentDetails'].get('duration')) <= MAX_VID_LENGTH
+        'duration': lambda i: parse_isoduration(i['contentDetails'].get('duration')) <= MAX_VID_LENGTH,
+        'nightcore': lambda i: 'nightcore' not in i['snippet']['title'].lower()
     }, lambda i: i.get('id')), res_det['items']))
 
     logging.info('After filtering, %i results remain', check_results_len(items_det))

@@ -18,6 +18,10 @@ I currently have this script running in an [AWS Lambda](https://aws.amazon.com/l
 
 There's no easy way to find a totally random video on YouTube, much less one belonging to a certain category (music in my case), at least that I can find, so I had to get a little creative. To find a "random" video, the script generates a 4-character string prepended with `v=` (total of 6 characters), and searches for it in the music category. This typically returns videos whose IDs start with the 4-character string, but sometimes there will also be videos whose titles contain the 4-character string.
 
+## Help wanted!
+
+This bot's YouTube channel keeps getting flagged for adult content, because of the subreddits it links to. I've chosen the bot's subreddits after a quick search, but I don't browse them myself and have no idea what's posted there on a daily basis. If you know of subreddits that **absolutely do not contain anything suggestive**, receive frequent submissions and match the theme of nightcore, please add them to the `SUBREDDITS` tuple in [nightcorei.py](nightcorei.py) and submit a pull request.
+
 ## Requirements
 - Python 3.8
 - [`ffmpeg`](https://ffmpeg.org)

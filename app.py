@@ -51,7 +51,7 @@ if video_url:
         video_url = info_dict.get("url", None)
         video_id = info_dict.get("id", None)
         video_title = info_dict.get('title', None)
-        ydl.download([video])
+        ydl.download(["video.mp3"])
 
     st.write("You selected: ", video_title)
 
@@ -63,6 +63,6 @@ if video_url:
 
     if st.button('Nightcorerify it'):
         st.write('Why hello there')
-        newvideo = create_video( [video], str(img_path), img_dimensions)
+        newvideo = create_video( "video.mp3", str(img_path), img_dimensions)
 
 

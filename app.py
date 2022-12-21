@@ -67,7 +67,7 @@ if video_url:
             file.write(res.read())
 
         # newAudio = create_video( video_id, str(img_path), img_dimensions)
-        newAudio = create_video( ydl, str(img_path), img_dimensions)
+        newAudio = create_video( video_id, str(img_path), img_dimensions)
         st.write('ready')
         # st.write(len(newAudio))
         st.audio(newAudio, format='audio/mp3')

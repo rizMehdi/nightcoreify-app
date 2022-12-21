@@ -50,14 +50,14 @@ if video:
         st.video(video) 
 
 
-    img_url="https://www.publicdomainpictures.net/pictures/300000/velka/abstract-wallpaper-15572324177B2.jpg"
-    img_dimensions= (1920 ,1285 )
-    pic_path="img.jpg"
-    with urllib.request.urlopen(urllib.request.Request(pic_url, headers=REQ_HEADERS)) as res, open(pic_path, 'wb') as file:
-        file.write(res.read())
+    # img_url="https://www.publicdomainpictures.net/pictures/300000/velka/abstract-wallpaper-15572324177B2.jpg"
+    # img_dimensions= (1920 ,1285 )
+    # pic_path="img.jpg"
+    # with urllib.request.urlopen(urllib.request.Request(pic_url, headers=REQ_HEADERS)) as res, open(pic_path, 'wb') as file:
+    #     file.write(res.read())
 
-    if st.button('Nightcorerify it'):
-        st.write('Why hello there')
-        newvideo = create_video( downloadedvideo, str(pic_path), img_dimensions)
+    # if st.button('Nightcorerify it'):
+    #     st.write('Why hello there')
+    #     newvideo = create_video( downloadedvideo, str(pic_path), img_dimensions)
 
 

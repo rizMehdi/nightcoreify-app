@@ -34,31 +34,31 @@ if video_url:
         st.write('Why hello there')
 
     
-        dl_opts = {
-                # ytdl can encode the downloaded audio at a specific sample rate
-                'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
-                'postprocessors': [{
-                    # also, it can create an audio file in whatever format on its own
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': AUDIO_FILE_FORMAT,
-                }],
-                'audioformat': AUDIO_FILE_FORMAT,
-                'outtmpl': "temp.wav",#file_template,
-                'noplaylist': True,  # sanity
-                'nooverwrites': False,  # sanity
-                'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
-            }
+        # dl_opts = {
+        #         # ytdl can encode the downloaded audio at a specific sample rate
+        #         'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
+        #         'postprocessors': [{
+        #             # also, it can create an audio file in whatever format on its own
+        #             'key': 'FFmpegExtractAudio',
+        #             'preferredcodec': AUDIO_FILE_FORMAT,
+        #         }],
+        #         'audioformat': AUDIO_FILE_FORMAT,
+        #         'outtmpl': "temp.wav",#file_template,
+        #         'noplaylist': True,  # sanity
+        #         'nooverwrites': False,  # sanity
+        #         'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
+        #     }
 
-        with youtube_dl.YoutubeDL(dl_opts) as ydl:
-            info_dict = ydl.extract_info(video_url, download=False)
-            video_url = info_dict.get("url", None)
-            video_id = info_dict.get("id", None)
-            video_title = info_dict.get('title', None)
-            # ydl.download([video_url])
-            ydl.download([video_id])
+        # with youtube_dl.YoutubeDL(dl_opts) as ydl:
+        #     info_dict = ydl.extract_info(video_url, download=False)
+        #     video_url = info_dict.get("url", None)
+        #     video_id = info_dict.get("id", None)
+        #     video_title = info_dict.get('title', None)
+        #     # ydl.download([video_url])
+        #     ydl.download([video_id])
 
-        st.write("You selected: ", video_title)
-
+        # st.write("You selected: ", video_title)
+        dlndVid= download_video(link):
     # (id, title, tags)
         img_url="https://www.publicdomainpictures.net/pictures/300000/velka/abstract-wallpaper-15572324177B2.jpg"
         img_dimensions= (1920 ,1285 )
@@ -67,8 +67,64 @@ if video_url:
             file.write(res.read())
 
         # newAudio = create_video( video_id, str(img_path), img_dimensions)
-        newAudio = create_video( video_id, str(img_path), img_dimensions)
+        newAudio = create_video( dlndVid, str(img_path), img_dimensions)
         st.write('ready')
         # st.write(len(newAudio))
         st.audio(newAudio, format='audio/mp3')
 
+
+
+# @click.argument('link')
+# @apis.command()
+def download_video(link):
+    dl_opts = {
+        # ytdl can encode the downloaded audio at a specific sample rate
+        'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
+        'postprocessors': [{
+            # also, it can create an audio file in whatever format on its own
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': AUDIO_FILE_FORMAT,
+        }],
+        'audioformat': AUDIO_FILE_FORMAT,
+        'outtmpl': "./%(id)s.%(ext)s",
+        'noplaylist': True,  # sanity
+        'nooverwrites': False,  # sanity
+        'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
+        }
+    _id = link.strip()
+    # meta = youtube_dl.YoutubeDL(ydl_opts).extract_info(_id)
+    with youtube_dl.YoutubeDL(dl_opts) as ydl:
+        info_dict = ydl.extract_info(_id)#, download=False)
+        # video_url = info_dict.get("url", None)
+        video_id = info_dict.get("id", None)
+        video_title = info_dict.get('title', None)
+        # ydl.download([video_url])
+        # ydl.download([video_id])
+        save_location = meta['id'] + ".mp4"
+    # print(save_location)
+    return save_location
+
+        # dl_opts = {
+        #         # ytdl can encode the downloaded audio at a specific sample rate
+        #         'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
+        #         'postprocessors': [{
+        #             # also, it can create an audio file in whatever format on its own
+        #             'key': 'FFmpegExtractAudio',
+        #             'preferredcodec': AUDIO_FILE_FORMAT,
+        #         }],
+        #         'audioformat': AUDIO_FILE_FORMAT,
+        #         'outtmpl': "./%(id)s.%(ext)s",
+        #         'noplaylist': True,  # sanity
+        #         'nooverwrites': False,  # sanity
+        #         'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
+        #     }
+
+        # with youtube_dl.YoutubeDL(dl_opts) as ydl:
+        #     info_dict = ydl.extract_info(video_url, download=False)
+        #     video_url = info_dict.get("url", None)
+        #     video_id = info_dict.get("id", None)
+        #     video_title = info_dict.get('title', None)
+        #     # ydl.download([video_url])
+        #     ydl.download([video_id])
+
+        # st.write("You selected: ", video_title)

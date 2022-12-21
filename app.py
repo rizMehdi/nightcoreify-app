@@ -31,7 +31,7 @@ dl_opts = {
             'preferredcodec': AUDIO_FILE_FORMAT,
         }],
         'audioformat': AUDIO_FILE_FORMAT,
-        'outtmpl': file_template,
+        'outtmpl': "temp.wav",#file_template,
         'noplaylist': True,  # sanity
         'nooverwrites': False,  # sanity
         'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda

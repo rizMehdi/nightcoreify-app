@@ -58,6 +58,9 @@ if video_url:
              
 
         st.write("You selected: ", video_title)
+        st.write("file name: ", video_id+AUDIO_FILE_FORMAT)
+        st.write("len ", len(video_id+AUDIO_FILE_FORMAT))
+
 
     # (id, title, tags)
         img_url="https://www.publicdomainpictures.net/pictures/300000/velka/abstract-wallpaper-15572324177B2.jpg"

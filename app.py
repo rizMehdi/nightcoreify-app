@@ -67,5 +67,5 @@ if video_url:
 
         newAudio = create_video( video_id, str(img_path), img_dimensions)
         st.write('ready')
-        st.audio("temp.mp3", format='audio/ogg')
+        st.audio(newAudio, format='audio/mp3')
 

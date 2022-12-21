@@ -87,7 +87,7 @@ if video_url:
         #     ydl.download([video_id])
 
         # st.write("You selected: ", video_title)
-        dlndVid= download_video(link)
+        dlndVid= download_video(video_url)
     # (id, title, tags)
         img_url="https://www.publicdomainpictures.net/pictures/300000/velka/abstract-wallpaper-15572324177B2.jpg"
         img_dimensions= (1920 ,1285 )

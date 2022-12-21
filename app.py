@@ -45,8 +45,9 @@ if video:
         video_id = info_dict.get("id", None)
         video_title = info_dict.get('title', None)
 
-    st.write(video_title)
+    st.write(You selected: ", video_title)
     # download_song(s_id, YT_URL)
+    st.video(video) 
 
     if st.button('Nightcorerify it'):
         st.write('Why hello there')

@@ -6,12 +6,12 @@ This is the streamlit app for nightcoreify.
 
 It works as following:
 - Paste a URL for a song from YouTube
-- finds and downloads a random anime artwork from USplash
-# - finds and downloads a random anime artwork from Reddit - I broke tradition and went with Reddit rather than Pixiv because their API is so much friendlier.
+- finds and downloads a random anime artwork from Unsplash
+- finds and downloads a random anime artwork from Reddit - I broke tradition and went with Reddit rather than Pixiv because their API is so much friendlier.
 - Render a new video, using FFmpeg, with sped up audio + image + audio visualizer
 - Uploads the finished product to YouTube
 
-# I currently have this script running in an [AWS Lambda](https://aws.amazon.com/lambda/) function, scheduled with an [EventBridge (https://aws.amazon.com/eventbridge/) rule, and uploading [here](https://youtube.com/c/nightcoreify) every 6 hours. It's deployed on top of [this Lambda layer for FFmpeg](https://github.com/serverlesspub/ffmpeg-aws-lambda-layer).
+<!-- I currently have this script running in an [AWS Lambda](https://aws.amazon.com/lambda/) function, scheduled with an [EventBridge (https://aws.amazon.com/eventbridge/) rule, and uploading [here](https://youtube.com/c/nightcoreify) every 6 hours. It's deployed on top of [this Lambda layer for FFmpeg](https://github.com/serverlesspub/ffmpeg-aws-lambda-layer).… -->
 
 
 

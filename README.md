@@ -2,7 +2,7 @@
 
 [Nightcore](https://en.wikipedia.org/wiki/Nightcore) is mind-numbingly simple. It's just a speed-shift of a pre-existing track, with anime artwork and a visualizer slapped on top. The harsh reality is, we are wasting human minds on the creation of such low-effort "music."
 
-This is the streamlit app for nightcoreify.
+This is the streamlit app for [nightcoreify](https://github.com/thomashuss/nightcoreify).
 
 It works as following:
 - Paste a URL for a song from YouTube

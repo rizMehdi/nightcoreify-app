@@ -63,6 +63,6 @@ if video_url:
 
     if st.button('Nightcorerify it'):
         st.write('Why hello there')
-        newvideo = create_video( video, str(img_path), img_dimensions)
+        newvideo = create_video( [video], str(img_path), img_dimensions)
 
 

@@ -59,7 +59,8 @@ if video_url:
 
         st.write("You selected: ", video_title)
         st.write("file name: ", video_id+AUDIO_FILE_FORMAT)
-        st.write("len ", len(video_id+AUDIO_FILE_FORMAT))
+        info_dict
+        video_id+AUDIO_FILE_FORMAT
 
 
     # (id, title, tags)

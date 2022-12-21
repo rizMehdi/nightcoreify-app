@@ -47,7 +47,10 @@ if video:
 
     st.write("You selected: ", video_title)
     # download_song(s_id, YT_URL)
-    st.video(video) 
+
+    pad, videocont, pad = st.columns(3):
+    with videocont:
+        st.video(video) 
 
     if st.button('Nightcorerify it'):
         st.write('Why hello there')

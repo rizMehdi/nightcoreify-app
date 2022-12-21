@@ -41,7 +41,7 @@ if video:
         video_url = info_dict.get("url", None)
         video_id = info_dict.get("id", None)
         video_title = info_dict.get('title', None)
-        downloadedvideo=ydl.download(video)
+        downloadedvideo=ydl.download([video])
    
     st.write("You selected: ", video_title)
     # download_song(s_id, YT_URL)

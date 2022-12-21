@@ -65,5 +65,7 @@ if video_url:
         with urllib.request.urlopen(urllib.request.Request(img_url, headers=REQ_HEADERS)) as res, open(img_path, 'wb') as file:
             file.write(res.read())
 
-        newvideo = create_video( video_id, str(img_path), img_dimensions)
+        newAudio = create_video( video_id, str(img_path), img_dimensions)
         st.write('ready')
+        st.audio(newAudio, format='audio/ogg')
+

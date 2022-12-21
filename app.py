@@ -42,15 +42,15 @@ def download_video(link):
         'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
         }
     _id = link.strip()
-    meta = youtube_dl.YoutubeDL(ydl_opts).extract_info(_id)
-    # with youtube_dl.YoutubeDL(dl_opts) as ydl:
-        # info_dict = ydl.extract_info(_id)#, download=False)
+    # meta = youtube_dl.YoutubeDL(ydl_opts).extract_info(_id)
+    with youtube_dl.YoutubeDL(dl_opts) as ydl:
+        info_dict = ydl.extract_info(_id)#, download=False)
         # video_url = info_dict.get("url", None)
-    video_id = info_dict.get("id", None)
-    video_title = info_dict.get('title', None)
+        video_id = info_dict.get("id", None)
+        video_title = info_dict.get('title', None)
         # ydl.download([video_url])
         # ydl.download([video_id])
-    save_location = meta['id'] + ".mp4"
+        save_location = info_dict['id'] + ".mp4"
     # print(save_location)
     return save_location
 

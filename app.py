@@ -43,7 +43,7 @@ if video_url:
                     'preferredcodec': AUDIO_FILE_FORMAT,
                 }],
                 'audioformat': AUDIO_FILE_FORMAT,
-                'outtmpl':'%(id)s.%(ext)s', # "temp.wav",#file_template,
+                'outtmpl':'%(id)s.%(ext)s' # "temp.wav",#file_template,
                 'noplaylist': True,  # sanity
                 'nooverwrites': False,  # sanity
                 'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
@@ -58,7 +58,7 @@ if video_url:
              
 
         st.write("You selected: ", video_title)
-        # st.write("file name: ", video_id+AUDIO_FILE_FORMAT)
+        st.write("file name: ", video_id+AUDIO_FILE_FORMAT)
         # info_dict
         # video_id+"."+AUDIO_FILE_FORMAT
 
@@ -71,8 +71,7 @@ if video_url:
             file.write(res.read())
 
         # newAudio = create_video( video_id, str(img_path), img_dimensions)
-        newAudio = create_video( '%(id)s.%(ext)s', str(img_path), img_dimensions)
-        # newAudio = create_video( video_id+"."+AUDIO_FILE_FORMAT, str(img_path), img_dimensions)
+        newAudio = create_video( video_id+"."+AUDIO_FILE_FORMAT, str(img_path), img_dimensions)
         st.write('ready')
         # st.write(len(newAudio))
         st.video(newAudio)

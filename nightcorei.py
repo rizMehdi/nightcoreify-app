@@ -63,7 +63,7 @@ class RedditAPIError(Exception):
 def main(event=None, context=None):
     """The function that does the things."""
 
-    #logging.basicConfig(format='[%(funcName)s] %(message)s', level=#logging.DEBUG, force=True)
+    logging.basicConfig(format='[%(funcName)s] %(message)s', level=logging.DEBUG, force=True)
 
     # For local testing only
     if event is None and context is None:
@@ -114,10 +114,10 @@ def retry(*exc):
                     return func(*args, **kwargs)
                 except exc as e:
                     if n == runs:
-                        #logging.error('Giving up.')
+                        logging.error('Giving up.')
                         raise e
                     else:
-                        #logging.exception('Attempt %d failed, retrying in %d seconds...', n, timeout)
+                        logging.exception('Attempt %d failed, retrying in %d seconds...', n, timeout)
                         time.sleep(timeout)
                         timeout *= 2
 
@@ -132,7 +132,7 @@ def filterer(conditions: dict, id_getter):
     def filter_cb(item):
         for reason, condition in zip(conditions, conditions.values()):
             if not condition(item):
-                #logging.info('{} is filtered because of {}'.format(id_getter(item), reason))
+                logging.info('{} is filtered because of {}'.format(id_getter(item), reason))
                 return False
         return True
 
@@ -152,7 +152,7 @@ def check_results_len(results):
 def yt_factory() -> googleapiclient.discovery.Resource:
     """Constructs a YouTube API client."""
 
-    #logging.debug('Creating YouTube API client')
+    logging.debug('Creating YouTube API client')
     return googleapiclient.discovery.build(
         'youtube', 'v3', credentials=Credentials(None, **json.loads(getenv('YT_TOKEN'))), cache_discovery=False)
 
@@ -164,14 +164,14 @@ def random_image(to_dir: Path) -> tuple:
 
     # Get json of 100 newest posts of random subreddit
     reddit_json_url = urllib.parse.urljoin(REDDIT_URL, 'r/%s/new.json?limit=100' % (choice(SUBREDDITS)))
-    #logging.info('Reddit, do your thing!!1! Load %s', reddit_json_url)
+    logging.info('Reddit, do your thing!!1! Load %s', reddit_json_url)
     with urllib.request.urlopen(urllib.request.Request(reddit_json_url, headers=REQ_HEADERS)) as res:
         data = json.load(res)
 
     if data.get('error') is not None:
         raise RedditAPIError(data['error'])
 
-    #logging.info('Got %i posts', check_results_len(data['data']['children']))
+    logging.info('Got %i posts', check_results_len(data['data']['children']))
 
     posts = list(filter(filterer({
         'image': lambda i: i['data'].get('post_hint') == 'image' and 'url' in i['data'],
@@ -185,7 +185,7 @@ def random_image(to_dir: Path) -> tuple:
         'gif': lambda i: '.gif' not in i['data']['url'].lower()
     }, lambda i: i['data'].get('permalink')), data['data']['children']))
 
-    #logging.info('After filtering, %i posts remain', check_results_len(posts))
+    logging.info('After filtering, %i posts remain', check_results_len(posts))
 
     my_pic = choice(posts)
     permalink = urllib.parse.urljoin(REDDIT_URL, my_pic['data']['permalink'])
@@ -197,8 +197,8 @@ def random_image(to_dir: Path) -> tuple:
     dimensions = (my_pic['data']['preview']['images'][0]['source']['width'],
                   my_pic['data']['preview']['images'][0]['source']['height'])
 
-    #logging.info('Selected image %s', permalink)
-    #logging.debug('Download %s', pic_url)
+    logging.info('Selected image %s', permalink)
+    logging.debug('Download %s', pic_url)
 
     with urllib.request.urlopen(urllib.request.Request(pic_url, headers=REQ_HEADERS)) as res, open(pic_path, 'wb') as file:
         file.write(res.read())
@@ -214,7 +214,7 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
     # that string, but the former is more common. Basically, we are at the mercy of the YouTube algorithm.
     # The random "ID" is the first 4 characters of a UUID4. Any more than 4 characters tends to return less videos.
     q = 'v=%s' % str(uuid4())[:4]
-    #logging.info('Search YouTube for "%s"', q)
+    logging.info('Search YouTube for "%s"', q)
     req_vid = youtube.search().list(
         part='snippet',
         maxResults=50,
@@ -223,14 +223,14 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
         videoCategoryId=YT_CATEGORY
     )
     res_vid = req_vid.execute()
-    #logging.info('Initial query returned %i results', check_results_len(res_vid['items']))
+    logging.info('Initial query returned %i results', check_results_len(res_vid['items']))
 
     req_det = youtube.videos().list(
         # gets tags and duration of the videos returned by previous search
         part='snippet,contentDetails',
         id=','.join(vid['id']['videoId'] for vid in res_vid['items'])
     )
-    #logging.debug('Get tags & duration')
+    logging.debug('Get tags & duration')
     res_det = req_det.execute()
 
     items_det = list(filter(filterer({
@@ -238,11 +238,11 @@ def random_song(youtube: googleapiclient.discovery.Resource) -> tuple:
         'nightcore': lambda i: 'nightcore' not in i['snippet']['title'].lower()
     }, lambda i: i.get('id')), res_det['items']))
 
-    #logging.info('After filtering, %i results remain', check_results_len(items_det))
+    logging.info('After filtering, %i results remain', check_results_len(items_det))
 
     my_choice = choice(items_det)
     v_id = my_choice['id']
-    #logging.info('Selected video %s, duration is %s', v_id, my_choice['contentDetails'].get('duration'))
+    logging.info('Selected video %s, duration is %s', v_id, my_choice['contentDetails'].get('duration'))
 
     # YouTube API returns titles with HTML escape characters
     title = unescape(my_choice['snippet']['title'])
@@ -274,7 +274,7 @@ def download_song(s_id: str, file_template: str):
         'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
     }
 
-    #logging.debug('Downloading original song')
+    logging.debug('Downloading original song')
     with youtube_dl.YoutubeDL(dl_opts) as ytdl:
         ytdl.download([s_id])
 
@@ -323,13 +323,13 @@ def create_video(audio_path: str, img_path: str, img_dimensions: tuple) -> Bytes
     ]
 
     # Log the ffmpeg command for debugging
-    #logging.debug('ffmpeg command: %s', ' '.join(cmd))
+    logging.debug('ffmpeg command: %s', ' '.join(cmd))
     start_time = time.time()
     ffmpeg = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # ffmpeg logs to stderr
-    #logging.debug(ffmpeg.stderr.decode('utf-8').replace('\n', '\n!!!!! '))
-    # st.write('ffmpeg finished in %i seconds, video size is %i bytes', time.time() - start_time, check_results_len(ffmpeg.stdout))
+    logging.debug(ffmpeg.stderr.decode('utf-8').replace('\n', '\n!!!!! '))
+    logging.info('ffmpeg finished in %i seconds, video size is %i bytes', time.time() - start_time, check_results_len(ffmpeg.stdout))
 
     return BytesIO(ffmpeg.stdout)
 
@@ -350,14 +350,14 @@ def upload_video(video: BytesIO, tags: list, title: str, desc: str, youtube: goo
         }
     }
 
-    #logging.info('Uploading video to YouTube')
+    logging.info('Uploading video to YouTube')
     req = youtube.videos().insert(
         part=','.join(body.keys()) + ',id',
         body=body,
         media_body=MediaIoBaseUpload(
             video, VIDEO_MIME, chunksize=1024 * 1024, resumable=True),
     )
-    #logging.debug('Response from YouTube: %s', json.dumps(req.execute(), indent=None))
+    logging.debug('Response from YouTube: %s', json.dumps(req.execute(), indent=None))
 
 
 def create_tags(tags: list) -> list:
@@ -382,7 +382,7 @@ def create_tags(tags: list) -> list:
 
     new_tags.append(to_add)
 
-    #logging.debug('Tags: %s', new_tags)
+    logging.debug('Tags: %s', new_tags)
     return new_tags
 
 

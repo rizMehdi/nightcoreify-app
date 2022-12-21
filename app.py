@@ -47,8 +47,7 @@ if video:
 
     st.write("You selected: ", video_title)
     # download_song(s_id, YT_URL)
-
-    pad, videocont, pad = st.columns(3)
+    videocont, pad = st.columns(2)
     with videocont:
         st.video(video) 
 

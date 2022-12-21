@@ -51,10 +51,11 @@ if video_url:
         video_url = info_dict.get("url", None)
         video_id = info_dict.get("id", None)
         video_title = info_dict.get('title', None)
-        ydl.download([video_url])
+        ydl.download([video_id])
 
     st.write("You selected: ", video_title)
 
+# (id, title, tags)
     img_url="https://www.publicdomainpictures.net/pictures/300000/velka/abstract-wallpaper-15572324177B2.jpg"
     img_dimensions= (1920 ,1285 )
     img_path="img.jpg"
@@ -63,6 +64,6 @@ if video_url:
 
     if st.button('Nightcorerify it'):
         st.write('Why hello there')
-        newvideo = create_video( video_url, str(img_path), img_dimensions)
+        newvideo = create_video( video_id, str(img_path), img_dimensions)
 
 

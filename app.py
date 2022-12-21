@@ -8,7 +8,7 @@ st.set_page_config(page_title="nightcorerify-app",page_icon=None,layout="wide")
 st.write("hello world")
 video = st.text_input('Paste a youtube URL below')
 
-with YoutubeDL(youtube_dl_opts) as ydl:
+with youtube_dl.YoutubeDL(youtube_dl_opts) as ydl:
       info_dict = ydl.extract_info(video, download=False)
       video_url = info_dict.get("url", None)
       video_id = info_dict.get("id", None)
@@ -21,3 +21,4 @@ if st.button('Nightcorerify it'):
     st.write('Why hello there')
 
 
+ 

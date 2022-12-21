@@ -21,7 +21,6 @@ st.write("hello world")
 video = st.text_input('Paste a youtube URL below')
 
 if video:
-
     dl_opts = {
             # ytdl can encode the downloaded audio at a specific sample rate
             'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
@@ -37,22 +36,28 @@ if video:
             'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
         }
 
-
-
     with youtube_dl.YoutubeDL(dl_opts) as ydl:
         info_dict = ydl.extract_info(video, download=False)
         video_url = info_dict.get("url", None)
         video_id = info_dict.get("id", None)
         video_title = info_dict.get('title', None)
-
+        downloadedvideo=ytdl.download(video)
+   
     st.write("You selected: ", video_title)
     # download_song(s_id, YT_URL)
     videocont, pad = st.columns(2)
     with videocont:
         st.video(video) 
 
+
+    img_url="https://www.publicdomainpictures.net/pictures/300000/velka/abstract-wallpaper-15572324177B2.jpg"
+    img_dimensions= (1920 ,1285 )
+    pic_path="img.jpg"
+    with urllib.request.urlopen(urllib.request.Request(pic_url, headers=REQ_HEADERS)) as res, open(pic_path, 'wb') as file:
+        file.write(res.read())
+
     if st.button('Nightcorerify it'):
         st.write('Why hello there')
+        newvideo = create_video( downloadedvideo, str(pic_path), img_dimensions)
 
 
-    

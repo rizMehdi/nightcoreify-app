@@ -20,36 +20,36 @@ CONTAINER_FORMAT = 'mpegts'
 st.write("hello world")
 video = st.text_input('Paste a youtube URL below')
 
+if video:
+
+    dl_opts = {
+            # ytdl can encode the downloaded audio at a specific sample rate
+            'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
+            'postprocessors': [{
+                # also, it can create an audio file in whatever format on its own
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': AUDIO_FILE_FORMAT,
+            }],
+            'audioformat': AUDIO_FILE_FORMAT,
+            'outtmpl': "temp.wav",#file_template,
+            'noplaylist': True,  # sanity
+            'nooverwrites': False,  # sanity
+            'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
+        }
 
 
-dl_opts = {
-        # ytdl can encode the downloaded audio at a specific sample rate
-        'format': 'bestaudio[asr=%d]' % AUDIO_SAMPLE_RATE,
-        'postprocessors': [{
-            # also, it can create an audio file in whatever format on its own
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': AUDIO_FILE_FORMAT,
-        }],
-        'audioformat': AUDIO_FILE_FORMAT,
-        'outtmpl': "temp.wav",#file_template,
-        'noplaylist': True,  # sanity
-        'nooverwrites': False,  # sanity
-        'cachedir': False,  # ytdl tries to write to ~ which is read-only in lambda
-    }
+
+    with youtube_dl.YoutubeDL(dl_opts) as ydl:
+        info_dict = ydl.extract_info(video, download=False)
+        video_url = info_dict.get("url", None)
+        video_id = info_dict.get("id", None)
+        video_title = info_dict.get('title', None)
+
+    st.write(video_title)
+    # download_song(s_id, YT_URL)
+
+    if st.button('Nightcorerify it'):
+        st.write('Why hello there')
 
 
-
-with youtube_dl.YoutubeDL(dl_opts) as ydl:
-      info_dict = ydl.extract_info(video, download=False)
-      video_url = info_dict.get("url", None)
-      video_id = info_dict.get("id", None)
-      video_title = info_dict.get('title', None)
-
-st.write(video_title)
-# download_song(s_id, YT_URL)
-
-if st.button('Nightcorerify it'):
-    st.write('Why hello there')
-
-
- 
+    

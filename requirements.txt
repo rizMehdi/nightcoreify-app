@@ -1,1 +1,2 @@
 ffmpeg-python
+youtube_dl

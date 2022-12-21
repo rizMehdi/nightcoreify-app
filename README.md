@@ -7,7 +7,7 @@ This is the streamlit app for nightcoreify.
 It works as following:
 - Paste a URL for a song from YouTube
 - finds and downloads a random anime artwork from Unsplash
-- finds and downloads a random anime artwork from Reddit - I broke tradition and went with Reddit rather than Pixiv because their API is so much friendlier.
+<!-- - finds and downloads a random anime artwork from Reddit - I broke tradition and went with Reddit rather than Pixiv because their API is so much friendlier. -->
 - Render a new video, using FFmpeg, with sped up audio + image + audio visualizer
 - Uploads the finished product to YouTube
 

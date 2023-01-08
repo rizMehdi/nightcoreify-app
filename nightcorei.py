@@ -298,7 +298,6 @@ def create_video(audio_path: str, img_path: str, img_dimensions: tuple) -> Bytes
         # ...until the shortest stream (i.e., the audio) ends
         '-shortest',
         '-filter_complex',
-        '-k',
         # Scale the input image (keeping aspect ratio) to width 1280 and nearest even height (-2);
         # even dimensions are required by the encoder
         '[0:v]scale=1280:-2[i];' +
@@ -319,6 +318,7 @@ def create_video(audio_path: str, img_path: str, img_dimensions: tuple) -> Bytes
         '-pix_fmt', 'yuv420p',
         # We need to explicity set the container because the final contents are being written to stdout
         '-f', CONTAINER_FORMAT,
+        '-k',
         # Write to stdout
         '-',
     ]
